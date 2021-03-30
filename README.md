@@ -7,4 +7,4 @@ ATTENTION: Web scraping is not conducted in an unregulated, norm-free space. Ple
 3) Consider scheduling your requests outside peak times (e.g. during the night)
 
 #### Packages
-The following packages are used: rvest, httr
+The following packages are used: rvest, httr, tidyverse, data.table
