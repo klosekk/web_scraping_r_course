@@ -197,43 +197,441 @@ pre code {
 </ol>
 <ul>
 <li>Before considering web scraping, check whether the website provides a database or API (use those first!)</li>
-<li>Implement reasonable request delays (might be mentioned in robots.txt)</li>
+<li>Implement reasonable request delays, i.e. Crawl-delays (might be mentioned in robots.txt)</li>
 <li>Consider scraping the website in off-peak hours (e.g. at night)</li>
 </ul>
 <ol start="3" style="list-style-type: decimal">
 <li>Identify yourself through a User Agent</li>
 </ol>
 <p>Every website (should) have a robots.txt file, accessible through root-homepage-name/robots.txt in the URL-field in your browser, which specifies which directories are Allowed/Disallowed to scrape from.</p>
-<p>Be mindful that web scraping creates traffic. If too many people engage in web scraping at the same time, you can inadvertently make it more difficult for human users to access the website. In worst case, you might crash the hosting server. If you are lucky, nothings happens, otherwise your IP address might be blocked (which would be unfortunate if you access websites from an institution VPN), and in worst case you will get a letter from a lawyer demanding compensation for the damage you created. Therefore, behave in an appropriate and mindful manner when you engage in web scraping.</p>
-<p>If you web scrape inside the European Union, consider reading the <a href="https://eur-lex.europa.eu/eli/dir/2019/790/oj">directive 2019/790</a> on on copyright and related rights enacted by the European Parliament and Eurpean Council.</p>
+<p>Be mindful that web scraping creates traffic. If too many people engage in web scraping at the same time, you can inadvertently make it more difficult for other users to access the website. In worst case, you might crash the hosing server. If you are lucky, nothings happens, otherwise your IP address might be blocked (which would be unfortunate if you access websites from an institutional VPN), and in worst case you will get a letter from a lawyer demanding compensation for the damage you created. Therefore, behave in an appropriate and mindful manner when you engage in web scraping.</p>
+<p>If you web scrape inside the European Union, consider reading the <a href="https://eur-lex.europa.eu/eli/dir/2019/790/oj">directive 2019/790</a> on copyright and related rights.</p>
 </div>
 <div id="htmlxml-syntax" class="section level2">
 <h2>HTML/XML syntax</h2>
-<p>HTML stand for <strong>H</strong>yper <strong>T</strong>ext <strong>M</strong>arkup <strong>L</strong>anguage and is an offshoot of XML which stands for <strong>Ex</strong>tensible <strong>M</strong>arkup <strong>L</strong>anguage. HTML forms the backbone of the majority of sites on the web, therefore it is curcial to understand its fundamental structure from the perspective of a web scraper.</p>
-<p>In markup language, plain text is categorized using tags with <strong>&lt;&gt;</strong> angle brackets. For instance, in HTML the tag &lt;title&gt; tells your browser to display <em>Title Name</em> as title: &lt;title&gt;Title Name&lt;/title&gt;. Together the combination of tags and text is referred to as <em>element</em>. While the syntax is the same, the meaning tags in HTML are strictly defined by the <a href="https://www.w3schools.com/html/">World Wide Web Consortium (W3C)</a>, whereas XML allows the user to create own tags. Another important feature for us are <strong>attributes</strong>. Attributes can be attached to tags, e.g. &lt;a href=“URL”&gt;Text&lt;/a&gt;. In this example, we assign a URL to text embedded in the &lt;a&gt;&lt;/a&gt; tag.</p>
-<p>Another important feature of HTML/XML is their tree-structure. Such tree-structured text is also called <strong>Document Object Model (DOM)</strong>. Tags like &lt;body&gt;&lt;/body&gt; can include multiple tags, e.g. &lt;title&gt;, &lt;p&gt;, or &lt;ul&gt; to name a few. This nested form allows us web scrapers to pinpoint at those tags which as closely as possible define the information we want to extract. For instance, in a structure such as &lt;body&gt;&lt;p&gt;Text&lt;ul&gt;Text&lt;/ul&gt;&lt;/p&gt;&lt;/body&gt; we might want to extract information provided as unstructured list (ul) by singling out <strong>ul</strong> as our target tag. Another way of thinking about tags in a tree-structure is to view them as nodes that can split into several additional nodes.</p>
-<p>Lastly, HTML source code can contain <strong>CSS (Cascading Style Sheets)</strong> which is used to format the layout of websites. Website developers define tags with CSS information, e.g. p.highlight where p stands for the paragraph tag &lt;p&gt; and <em>highlight</em> represents a specific layout style provided in curly brackets: p.highlight {color : green; font-size:150%}. The source code can then contain the CSS information using the class attribute: &lt;p class = “highlight”&gt;Text&lt;/p&gt;. One can also define the CSS style directly within a tag, but this becomes tedious and is less readable, especially when many different styles are used.</p>
+<p>HTML stand for <strong>H</strong>yper <strong>T</strong>ext <strong>M</strong>arkup <strong>L</strong>anguage and is an offshoot of XML which stands for <strong>Ex</strong>tensible <strong>M</strong>arkup <strong>L</strong>anguage. HTML forms the backbone of the majority of sites on the web, therefore it is crucial to understand its fundamental structure from the perspective of a web scraper.</p>
+<p>In markup language, plain text is categorized using tags with <strong>&lt;&gt;</strong> angle brackets. For instance, in HTML the tag <code>&lt;title&gt;</code> tells your browser to display <em>Title Name</em> as title: <code>&lt;title&gt;Title Name&lt;/title&gt;</code>. Together the combination of tags and text is referred to as <em>element</em>. While the syntax is the same, the meaning of tags in HTML are strictly defined by the <a href="https://www.w3schools.com/html/">World Wide Web Consortium (W3C)</a>, whereas XML allows the user to create own tags. Another important feature for us are <strong>attributes</strong>. Attributes can be attached to tags, e.g. <code>&lt;a href=&quot;URL&quot;&gt;Text&lt;/a&gt;</code>. In this example, we assign a URL to text embedded in the <code>&lt;a&gt;&lt;/a&gt;</code> tag.</p>
+<p>Another important feature of HTML/XML is their tree-structure. Such tree-structured text is also called <strong>Document Object Model (DOM)</strong>. Tags like <code>&lt;body&gt;&lt;/body&gt;</code> can include multiple tags, e.g. <code>&lt;title&gt;</code>, <code>&lt;p&gt;</code>, or <code>&lt;ul&gt;</code> to name a few. This nested form allows us web scrapers to pinpoint at those tags which as closely as possible define the information we want to extract. For instance, in a structure such as <code>&lt;body&gt;&lt;p&gt;Text&lt;ul&gt;Text&lt;/ul&gt;&lt;/p&gt;&lt;/body&gt;</code> we might want to extract information provided by an unstructured list (ul) by singling out <strong>ul</strong> as our target tag. Another way of thinking about tags in a tree-structure is to view them as nodes that can split into several additional nodes.</p>
+<p>Lastly, HTML source code can contain <strong>CSS (Cascading Style Sheets)</strong> which is used to format the layout of websites. Website developers define tags with CSS information, e.g. <code>p.highlight</code> where <code>p</code> stands for the paragraph tag <code>&lt;p&gt;</code> and <code>highlight</code> represents a specific layout style provided in curly brackets: <code>p.highlight {color : green; font-size:150%}</code>. The source code can then contain the CSS information using the class attribute: <code>&lt;p class = &quot;highlight&quot;&gt;Text&lt;/p&gt;</code>. One can also define the CSS style directly within a tag, but this becomes tedious and is less readable, especially when many different styles are used.</p>
 </div>
 <div id="xpath" class="section level2">
 <h2>XPATH</h2>
-<p><strong>XPATH</strong> stands for <strong>X</strong>ML <strong>P</strong>ath <strong>L</strong>anguage and is a web technology that allows the user to extract information from HTML/XML documents. Its structure is hierarchical meaing that we move alongside tags in the tree from the highest-order tags (e.g. /html/body) to lower-order tags (e.g. /div/p/ul). While we can use absolute paths (/html/body/div/p/ul), we might also use relative paths using // (e.g. //p/ul). This means that we extract information from all &lt;ul&gt; which are a node below all &lt;p&gt;. We however disgregard those &lt;ul&gt; which are not connected with a &lt;p&gt;.</p>
+<p><strong>XPATH</strong> stands for <strong>X</strong>ML <strong>P</strong>ath <strong>L</strong>anguage and is a web technology that allows the user to extract information from HTML/XML documents. Since their structure is hierarchical, we can move alongside tags in the tree from the highest-order tags (e.g. <code>/html/body</code>) to lower-order tags (e.g. <code>/div/p/ul</code>). While we can use absolute paths (<code>/html/body/div/p/ul</code>), we might also use relative paths using <code>\/\/</code> (e.g. <code>//p/ul</code>). This means that we extract information from all <code>&lt;ul&gt;</code> which are a node below all <code>&lt;p&gt;</code>. We however disregard those <code>&lt;ul&gt;</code> which are not connected with a <code>&lt;p&gt;</code>.</p>
+<p>XPATH uses some characters with special meaning:</p>
+<ul>
+<li>The star * performs as a wildcard operator. This means that inserting * into a path such as <code>/body/div/*/ul</code> leads to identifying information that starts at body, moves along to div and then takes all tags that contain an ul-tag into consideration.</li>
+<li>The vertical bar <code>|</code> allows us to select multiple paths in one query, e.g. <code>//p | //a</code></li>
+<li>The <code>@</code> symbol allows us to select attributes within <code>&lt;&gt;</code> tags, e.g. <code>p[@class=...]</code></li>
+</ul>
+<p>XPATH also the ability to create very precise paths by specifying unique relationships between nodes. For instance, the relative path <code>/p/i</code> provides us with information from the <code>&lt;i&gt;</code> node with a preceding <code>&lt;p&gt;</code> node, but what if there are multiple p-i nodes across branches and we are only interested in a particular branch? For this, we can harness the hierarchical tree-structure in XPATH which allows us to distinguish branches. The following table summarizes which node relations can be used and can also be found <a href="https://www.w3schools.com/xml/xpath_axes.asp">here</a>.</p>
+<table>
+<colgroup>
+<col width="12%" />
+<col width="87%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">AxisName</th>
+<th align="left">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">ancestor</td>
+<td align="left">Selects all ancestors (parent, grandparent, etc.) of the current node</td>
+</tr>
+<tr class="even">
+<td align="left">ancestor-or-self</td>
+<td align="left">Selects all ancestors (parent, grandparent, etc.) of the current node and the current node itself</td>
+</tr>
+<tr class="odd">
+<td align="left">attribute</td>
+<td align="left">Selects all attributes of the current node</td>
+</tr>
+<tr class="even">
+<td align="left">child</td>
+<td align="left">Selects all children of the current node</td>
+</tr>
+<tr class="odd">
+<td align="left">descendant</td>
+<td align="left">Selects all descendants (children, grandchildren, etc.) of the current node</td>
+</tr>
+<tr class="even">
+<td align="left">descendant-or-self</td>
+<td align="left">Selects all descendants (children, grandchildren, etc.) of the current node and the current node itself</td>
+</tr>
+<tr class="odd">
+<td align="left">following</td>
+<td align="left">Selects everything in the document after the closing tag of the current node</td>
+</tr>
+<tr class="even">
+<td align="left">following-sibling</td>
+<td align="left">Selects all siblings after the current node</td>
+</tr>
+<tr class="odd">
+<td align="left">namespace</td>
+<td align="left">Selects all namespace nodes of the current node</td>
+</tr>
+<tr class="even">
+<td align="left">parent</td>
+<td align="left">Selects the parent of the current node</td>
+</tr>
+<tr class="odd">
+<td align="left">preceding</td>
+<td align="left">Selects all nodes that appear before the current node in the document, except ancestors, attribute nodes and namespace nodes</td>
+</tr>
+<tr class="even">
+<td align="left">preceding-sibling</td>
+<td align="left">Selects all siblings before the current node</td>
+</tr>
+<tr class="odd">
+<td align="left">self</td>
+<td align="left">Selects the current node</td>
+</tr>
+</tbody>
+</table>
+<p>For instance, the expression <code>//p/ancestor::a</code> selects all those <code>&lt;a&gt;</code> nodes which have somewhere in their branch a lower-order <code>&lt;p&gt;</code> node. The expression <code>//div/parent::title</code> selects those <code>&lt;div&gt;</code> nodes with <code>&lt;title&gt;</code> as their parent.</p>
+<p>Lastly, we can use <strong>predicates</strong> in brackets <code>[]</code> to create numeric or textual conditional TRUE/FALSE statements. The following expressions are a non-exhaustive list of the probably most useful predicates:</p>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="77%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Predicate</th>
+<th align="left">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>/div/h1[1]</code></td>
+<td align="left">Select the first H1 heading that is part of a <code>&lt;div&gt;</code> branch</td>
+</tr>
+<tr class="even">
+<td align="left"><code>/div/h1[last()]</code></td>
+<td align="left">Select the last H1 heading that is part of a <code>&lt;div&gt;</code> branch</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>/div/h1[position() &gt;= 2]</code></td>
+<td align="left">Select the second and following H1 headings that are part of a <code>&lt;div&gt;</code> branch</td>
+</tr>
+<tr class="even">
+<td align="left"><code>/div/h1[@href]</code></td>
+<td align="left">Select those H1 headings which contain a <code>href</code> attribute and are part of a <code>&lt;div&gt;</code> branch</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="how-to-identify-the-information-i-need-in-the-html-source-code" class="section level2">
 <h2>How to identify the information I need in the HTML source code</h2>
-<p>There is no water-proof way how to find exactly those tags than only contain that information that you want and nothing more. However, there are tools and ways how to facilitate the process.</p>
+<p>Now since we know how HTML/XML code is structured, and we have an idea how to access branches, we need to identify those elements that contain the information we are looking for. However, there is unfortunately no water-proof way but there are tools and ways how to facilitate the process.</p>
 <p>The most useful tool is <a href="https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb">SelectorGadget</a> which is available as Chrome extension. Selector gadget allows you to point-and-click at elements of a website that contain your desired information. Make sure that only information is highlighted in green/yellow that contains what you want to extract. In best circumstances, you will obtain a tag or a combination of tags that we can use later as nodes to separate irrelevant from relevant information.</p>
-<p>Should you fail to obtain some straightforward combination of tags, the second option is to use <strong>XPATH</strong>. You can use SelectorGadget to obtain the XPATH or you right-click on your desired information and select <em>inspect</em> (on Chrome). Evaluate the highlighted source code and see whether you can find a pattern that connects the data you are looking for with a combination of tags. For instance, you might be interested in obtaining the titles of articles and you discover that those titles you are searching for all use class=“media_tag2” within an &lt;a&gt; tag. With this information at hand, you can use XPATH to directly access all text with &lt;a class=“media_tag2”&gt;.</p>
+<p>Should you fail to obtain some straightforward combination of tags, the second option is to use <strong>XPATH</strong>. You can use SelectorGadget to obtain the XPATH or you right-click on your desired information and select <em>inspect</em> (on Chrome). Evaluate the highlighted source code and see whether you can find a pattern that connects the data you are looking for with a combination of tags. For instance, you might be interested in obtaining the titles of articles and you discover that those titles you are searching for all use class=“media_tag2” within an <code>&lt;a&gt;</code> tag. With this information at hand, you can use XPATH to directly access all text with <code>&lt;a class=&quot;media_tag2&quot;&gt;</code>.</p>
 </div>
 <div id="using-html-for-web-scraping-in-r" class="section level2">
 <h2>Using HTML for web scraping in R</h2>
 <p>In R, we typically engage in the following process:</p>
 <ol style="list-style-type: decimal">
 <li>Download the HTML source code</li>
-<li>Use parsing to create a DOM</li>
+<li>Parse the source code to create a DOM (rvest package does it automatically)</li>
 <li>Harness the tree-structure of your DOM to identify elements with relevant information</li>
 <li>Use R functions to extract information</li>
 <li>Create data objects such as lists or data frames suitable for data analysis</li>
 </ol>
+</div>
+<div id="setting-up-your-user-agent" class="section level2">
+<h2>Setting-up your user agent</h2>
+<p>When you communicate with web servers, it is good practise to insert your name and email address so that the webmaster knows that you are a person and not a bot. Do not provide credentials of someone else other than you! This is called spoofing and illegal.</p>
+<pre class="r"><code>library(httr)
+agent &lt;- user_agent(agent = &quot;your email address; your project; additional information&quot;)
+set_config(agent)</code></pre>
+</div>
+<div id="example-1-extracting-text-from-one-website" class="section level2">
+<h2>Example 1: Extracting text from one website</h2>
+<p>Here, we are going to extract the main text of a website. For our purposes, we use the website <a href="https://fivethirtyeight.com/politics/" class="uri">https://fivethirtyeight.com/politics/</a> First of all, we have to check the robots.txt file: <a href="https://fivethirtyeight.com/robots.txt" class="uri">https://fivethirtyeight.com/robots.txt</a></p>
+<p>We get the following output: <code>User-agent: *</code> <code>Disallow: /wp-admin/</code> <code>Allow: /wp-admin/admin-ajax.php</code></p>
+<p>This means that:</p>
+<ol style="list-style-type: decimal">
+<li>A user agent with * refers to everybody who wants to scrape data from the website</li>
+<li>We are forbidden to scrape data from the path <a href="https://fivethirtyeight.com/wp-admin/" class="uri">https://fivethirtyeight.com/wp-admin/</a>*</li>
+<li>The third condition is not relevant for our purposes</li>
+<li>What is missing here is a Crawl-delay argument specifing how much time should pass between each request. It is always prudent to have 10 seconds delay.</li>
+</ol>
+<p>This already looks promising. The website administrator allows us to web scrape this particular website with the one aforementioned exception. Let us now have a look at a particular article: <a href="https://fivethirtyeight.com/features/why-georgias-new-voting-law-is-such-a-big-deal/" class="uri">https://fivethirtyeight.com/features/why-georgias-new-voting-law-is-such-a-big-deal/</a></p>
+<p>The article consists of a headline, text, and much more information. What we can do now is to use SelectorGadget in Chrome and click on the first paragraph starting with “From November 2020 to January 2021….”. What you can see is that each paragraph is highlighted with a yellow background except the the first paragraph which is green. Selector gadget also shows you that all those paragraphs share the <code>&lt;p&gt;</code> tag. That is important information because it means that we can find all text using the <code>&lt;p&gt;</code> tag. However, there is one (or more) problems. SelectorGadget also highlights the date, author, an additional attribute below the author name, the source of the picture, and a photo plus link in the middle of the text. They are highlighted because they, too, share the <code>&lt;p&gt;</code> tag. Hence, we have to deselect the unwanted information by clicking at the date and the link “Related”. SelectorGadget now provides us with the term “.single-post-content &gt; p” that we can use to identify excacly the main text of the article.</p>
+<p>Now it is time to use the power of the rvest package. Load the rvest package and the tidyverse into R using the <code>library()</code> function:</p>
+<pre class="r"><code>library(rvest)
+library(tidyverse)</code></pre>
+<p>We create now a variable url, where we store the link to our article. We then use the <code>read_html()</code> function to download the HTML source code. Under the hood, the function already parses the source code into a DOM object with tree-structure. We store the DOM in the object page.</p>
+<pre class="r"><code>url &lt;- &quot;https://fivethirtyeight.com/features/why-georgias-new-voting-law-is-such-a-big-deal/&quot;
+page &lt;- read_html(x = url)</code></pre>
+<p>In this step, it is time to extract the information about the text using the <code>html_elements()</code> and <code>html_text()</code> functions.</p>
+<pre class="r"><code>text &lt;- 
+  page %&gt;% 
+  html_elements(&quot;.single-post-content &gt; p&quot;) %&gt;% 
+  html_text(trim = TRUE) # Remove whitespace at the beginning and end of a string.</code></pre>
+<p>You should find in your R environment the object <code>text</code> which contains eight different strings each representing one paragraph from the original text. If we wanted to, we could paste it together with the <code>toString()</code> function.</p>
+<pre class="r"><code>text &lt;- toString(text)
+substr(x = text, start = 1, stop = 199) # show the first sentence</code></pre>
+<pre><code>## [1] &quot;From November 2020 to January 2021, the story of the state of Georgia was pro-Democratic: Democratic candidates for president and the U.S. Senate all won. But more importantly, it was pro-democratic.&quot;</code></pre>
+<p>So, we learned in this example:</p>
+<ol style="list-style-type: decimal">
+<li>How to read a robots.txt file</li>
+<li>How to use SelectorGadget to find a combination of CSS and tags that uniquely identifies what we want</li>
+<li>How to create a DOM with <code>read_html()</code></li>
+<li>How to extract information from the DOM with <code>html_elements()</code> and <code>html_text()</code></li>
+</ol>
+</div>
+<div id="example-2-create-a-dataset-of-recently-published-articles" class="section level2">
+<h2>Example 2: Create a dataset of recently published articles</h2>
+<p>This example will be very comprehensive and feature many aspects that are relevant for web scraping. We will make use of the fact that the URL of the FiveThirtyEight (Politics) website displays the page number. For instance <code>https://fivethirtyeight.com/politics/features/page/3/</code> will bring us to page 3. Hence, we can iterate over different pages and extract information about articles from each page.</p>
+<p>In this task, we are going to create a dataset listing all published articles available from page one until page ten with the name of the author(s), publication date, title, link, and category. First of all, we have to define the appropriate URL.</p>
+<pre class="r"><code>url &lt;- &quot;https://fivethirtyeight.com/politics/features/page/&quot;</code></pre>
+<p>In the following step, we create an empty list within which we store our temporary data.</p>
+<pre class="r"><code>dfs &lt;- list()</code></pre>
+<p>Further, let us create a subfolder in our project where we would like to store raw HTML source code. We do this because when we run an analysis, it would be tedious as well as time- and resource inefficient to constantly scrape data from websites we have already scraped.</p>
+<pre class="r"><code>data.directory &lt;- &quot;./source_code/&quot;
+if (!dir.exists(data.directory)) dir.create(data.directory)</code></pre>
+<p>Now the long and tedious part begins. We have to conduct the following steps:</p>
+<ol style="list-style-type: decimal">
+<li>Create a for-loop that loops over pages 1 to 10</li>
+<li>Create for each loop a URL with the appropriate page number</li>
+<li>Pull out from each site information on title, author, date, link, and category</li>
+<li>Store the data from one page as data frame in our list. Each list element is a data frame, so in the end we will have 10 elements</li>
+<li>Include a time-delay of 10 seconds plus variation to respect server capacities</li>
+<li>Execute the for-loop</li>
+<li>Combine all data frames into one using the function <code>rbindlist()</code> from the <code>data.table</code> package</li>
+</ol>
+<p><strong>Caution</strong>: Retrieving data on authors is not straightforward, as each author name is saved as a separate element within the source code. Simply retrieving author names gives us a vector with more authors than there are articles. Hence, to obtain author names we retrieve information on each post and then use regular expressions to extract author details.</p>
+<p><strong>Caution</strong>: The first article on the first page is somewhat differently embedded in the HTML source code than all following articles. Hence, separate code is written to retrive information on date and author names.</p>
+<p><strong>Caution</strong>: Unfortunately, there can be in very seldom cases missing information for categories. Here, I include a loop with sapply that loops over the lowest common node that each article must have. Then, I executed another loop to validate that the desired node was indeed available. If not, I imputed an <code>NA</code>.</p>
+<pre class="r"><code>for (i in 1:10) {
+  
+  # Receive information on current iteration
+  print(paste(&quot;Iteration number:&quot;,i))
+  
+  # Create the final URL
+  final.url &lt;- paste0(url,i)
+
+  # Parse HTML code
+  page &lt;- read_html(final.url)
+  
+  # Create a file name to save raw HTML source code of each page
+  file.name &lt;- paste0(&quot;./source_code/&quot;,Sys.Date(),&quot;_page_&quot;,i,&quot;.html&quot;)
+  
+  # Download file if it does not exist yet
+  if(!file.exists(file.name)) {
+    
+    # Download page
+    foo &lt;- GET(final.url)
+    
+    # Extract HTML source code as text
+    to.archive &lt;- content(foo, as = &quot;text&quot;)
+    
+    # Archive website
+    write(to.archive, file.name)
+    
+  }
+  
+  # Retrieve titles
+  title &lt;- 
+    page %&gt;% 
+    html_elements(css = &quot;.article-title a&quot;) %&gt;% 
+    html_text(trim = TRUE)
+
+  # Retrieve dates
+  date &lt;- 
+    page %&gt;% 
+    html_elements(xpath = &quot;//div[@class=&#39;post-info&#39;]/p/time&quot;) %&gt;% 
+    html_text(trim = TRUE)
+  
+  # Retrieve links
+  link &lt;- 
+    page %&gt;% 
+    html_elements(xpath = &quot;//h2[@class=&#39;article-title entry-title&#39;]/a&quot;) %&gt;% 
+    html_attr(&quot;href&quot;)
+  
+  
+  # Retrieve authors
+  author &lt;- 
+    page %&gt;% 
+    html_elements(css = &quot;.tease-meta-content&quot;) %&gt;% # Must use &quot;.tease-meta-content&quot; instead of &quot;.fn&quot; to retain information that authors belong to one element in the HTML source code
+    html_text() %&gt;% 
+    str_extract(pattern = &quot;\\tBy .*?\\n&quot;) %&gt;% # Extract author names
+    str_remove(pattern = &quot;\\tBy &quot;) %&gt;% # Remove unnecessary text
+    str_remove(pattern = &quot;\\n&quot;) %&gt;% # Remove unnecessary text
+    str_split(pattern = &quot;, | and &quot;, simplify = TRUE) %&gt;% # Split author names in separate columns
+    as_tibble() %&gt;% # Create a tibble
+    na_if(y = &quot;&quot;) # Remove empty strings with NAs
+
+    ## Collapse rows with author names into one cell
+    if(ncol(author) == 1) { # If there is only one author, just pull the column as vector
+      author &lt;- 
+        author %&gt;% 
+        pull(1)
+      } else { #If there are multiple authors, then collapse rows into strings
+        author &lt;- 
+          apply(author, 1, paste, collapse = &quot;, &quot;) %&gt;%  # For-loop for each row
+          str_remove_all(pattern = &quot;, NA&quot;) # Remove unnecessary text
+    }
+
+  # Retrieve categories
+  
+  ## Retrieve node that all articles share
+  category &lt;- 
+  page %&gt;% 
+  html_elements(xpath = &quot;//div[starts-with(@id,&#39;post-&#39;)]&quot;)
+  
+  
+  ## Loop over the elements
+  category &lt;- sapply(category, # Loop over each element separately
+                     function(x){ # Apply the following function
+                       x %&gt;%  # Take an element
+                         html_nodes(&quot;.post-info .term&quot;) %&gt;% # Extract from the element the node you need
+                         html_text(trim = TRUE) # Convert to text
+                       }
+                     ) %&gt;% # Pass the resulting element to the next function
+    sapply(function(x) # Apply the function to the retrieved element
+      ifelse(length(x) == 0, NA, x)) # Check if the element is empty. If yes, insert an NA
+  
+  attributes(category) &lt;- NULL # Remove attributes from the final vector
+  
+  ####################################
+  # Retrieve details from the first article on the first page
+  # For details, see explanations in the code above
+  
+  if(i == 1) {
+    
+    # First author
+    
+    author1 &lt;- 
+    page %&gt;% 
+    html_element(css = &quot;.vcard&quot;) %&gt;% 
+    html_text() %&gt;% 
+    str_remove(pattern = &quot;\\tBy &quot;) %&gt;% 
+    str_remove(pattern = &quot;\\n&quot;) %&gt;% # Remove unnecessary text
+    str_split(pattern = &quot;, | and &quot;, simplify = TRUE) %&gt;% 
+    as_tibble() %&gt;% 
+    na_if(y = &quot;&quot;)
+
+  if(ncol(author1) == 1) {
+    author1 &lt;- 
+      author1 %&gt;% 
+      pull(1)
+    } else {
+      author1 &lt;- 
+        apply(author1, 1, paste, collapse = &quot;, &quot;) %&gt;% 
+        str_remove_all(pattern = &quot;, NA&quot;)
+    }
+    
+      author &lt;- c(author1,author)
+      
+    # Retrieve date for the first post
+      
+    date1 &lt;- 
+      page %&gt;% 
+      html_elements(xpath = &quot;//time[@class=&#39;updated visually-hidden&#39;]&quot;) %&gt;% 
+      html_text(trim = TRUE) %&gt;% 
+      str_remove(pattern = &quot;,.*&quot;) %&gt;% 
+      str_c(&quot;, &quot;, format(Sys.Date(), &quot;%Y&quot;))
+    
+    date &lt;- c(date1,date)
+    
+    # Update empty category
+    
+    category &lt;- c(NA,category)
+  } 
+  
+  ####################################
+  dfs[[i]] &lt;- data.frame(title = title, author = author, date = date, category = category, link = link)
+  
+  Sys.sleep(time = 12 + rnorm(n = 1, mean = 0, sd = 2))
+  
+}</code></pre>
+<pre><code>## [1] &quot;Iteration number: 1&quot;
+## [1] &quot;Iteration number: 2&quot;
+## [1] &quot;Iteration number: 3&quot;
+## [1] &quot;Iteration number: 4&quot;
+## [1] &quot;Iteration number: 5&quot;
+## [1] &quot;Iteration number: 6&quot;
+## [1] &quot;Iteration number: 7&quot;
+## [1] &quot;Iteration number: 8&quot;
+## [1] &quot;Iteration number: 9&quot;
+## [1] &quot;Iteration number: 10&quot;</code></pre>
+<pre class="r"><code>dat &lt;- as.data.frame(data.table::rbindlist(dfs)) %&gt;% 
+  mutate(author = ifelse(test = author == &quot;NA&quot;, yes = &quot;A FiveThirtyEight Chat&quot;, no = author))  %&gt;% # Replace NAs in our dataset by A FiveThirtyEight Chat
+  filter(category != &quot;Politics Podcast&quot;) # Remove the Politics Podcast</code></pre>
+<p>We did it! We created our dataset containing information about published articles on the first ten pages FiveThirtyEight website. We can now have a look how the dataset looks like:</p>
+<pre class="r"><code>head(dat)</code></pre>
+<pre><code>##                                                                                   title
+## 1                      Do You Buy That … Stricter Voting Laws Will Benefit Republicans?
+## 2                                   COVID-19 Reminded Us Of Just How Unequal America Is
+## 3                            The States Where Efforts To Restrict Voting Are Escalating
+## 4                                       Why Georgia’s New Voting Law Is Such A Big Deal
+## 5                                             QAnon Has Become The Cult That Cries Wolf
+## 6 What Americans Think About D.C. Statehood, Anti-Asian Discrimination And LGBTQ Rights
+##                                        author          date        category
+## 1                                 Nate Silver Mar. 29, 2021 Do You Buy That
+## 2                              Neil Lewis Jr. Mar. 29, 2021        COVID-19
+## 3 Alex Samuels, Elena Mejía, Nathaniel Rakich Mar. 29, 2021   Voting Rights
+## 4                             Perry Bacon Jr. Mar. 26, 2021   Voting Rights
+## 5                              Kaleigh Rogers Mar. 26, 2021          Q Anon
+## 6                            Geoffrey Skelley Mar. 26, 2021    Pollapalooza
+##                                                                                                                        link
+## 1                         https://fivethirtyeight.com/videos/do-you-buy-that-stricter-voting-laws-will-benefit-republicans/
+## 2                                 https://fivethirtyeight.com/features/covid-19-reminded-us-of-just-how-unequal-america-is/
+## 3                          https://fivethirtyeight.com/features/the-states-where-efforts-to-restrict-voting-are-escalating/
+## 4                                      https://fivethirtyeight.com/features/why-georgias-new-voting-law-is-such-a-big-deal/
+## 5                                           https://fivethirtyeight.com/features/qanon-has-become-the-cult-that-cries-wolf/
+## 6 https://fivethirtyeight.com/features/what-americans-think-about-d-c-statehood-anti-asian-discrimination-and-lgbtq-rights/</code></pre>
+<p>Theoretically, we can now make some brief descriptive analysis. For instance, let us have a look at who were the top five contributors to the blog in the recent weeks and in which categories those articles were placed.</p>
+<p>Authors:</p>
+<pre class="r"><code>authors &lt;- 
+  dat$author %&gt;% 
+  str_split(pattern = &quot;, &quot;, simplify = TRUE) %&gt;% 
+  na_if(y = &quot;&quot;) %&gt;% 
+  table() %&gt;% 
+  sort(decreasing = TRUE) %&gt;% 
+  as_tibble() %&gt;% 
+  rename(author = &quot;.&quot;) %&gt;% 
+  filter(n &gt; 3) 
+
+ggplot(data = authors, mapping = aes(x = reorder(author, n), y = n, fill = n)) + 
+  geom_col() +
+  scale_fill_continuous(low = &quot;grey&quot;, high = &quot;black&quot;) +
+  xlab(label = &quot;&quot;) + 
+  ylab(label = &quot;&quot;) +
+  coord_flip() + 
+  theme_minimal()</code></pre>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Categories:</p>
+<pre class="r"><code>categories &lt;- 
+  dat$category %&gt;% 
+  table(useNA = NULL) %&gt;% 
+  sort(decreasing = TRUE) %&gt;% 
+  as_tibble() %&gt;% 
+  rename(category = &quot;.&quot;) %&gt;% 
+  filter(n &gt; 1) 
+
+ggplot(data = categories, mapping = aes(x = reorder(category, n), y = n, fill = n)) + 
+  geom_col() +
+  scale_fill_continuous(low = &quot;grey&quot;, high = &quot;black&quot;) +
+  xlab(label = &quot;&quot;) + 
+  ylab(label = &quot;&quot;) +
+  coord_flip() + 
+  theme_minimal()</code></pre>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqAAAAHgCAMAAABNUi8GAAACalBMVEUAAAAAADoAAGYAOpAAZrYCAgIFBQUHBwcJCQkMDAwODg4QEBARERETExMVFRUWFhYXFxcYGBgaGhocHBwdHR0eHh4fHx8hISEiIiIjIyMlJSUnJycoKCgpKSkqKiosLCwuLi4vLy8wMDAyMjIzMzM1NTU2NjY4ODg5OTk6AAA6ADo6AGY6OmY6OpA6kNs7Ozs8PDw+Pj4/Pz9AQEBCQkJERERFRUVHR0dJSUlKSkpMTExNTU1NTW5NTY5Nbo5NbqtNjo5NjqtNjshPT09QUFBSUlJUVFRVVVVXV1dYWFhaWlpbW1tcXFxdXV1fX19gYGBiYmJkZGRlZWVmAABmADpmAGZmOgBmOpBmtv9nZ2dpaWlqampsbGxuTU1uTW5uTY5ubk1ubm5ubo5ubqtujo5ujshuq6tuq8huq+Rvb29xcXFycnJ0dHR2dnZ3d3d5eXl6enp7e3t9fX1/f3+AgICCgoKDg4OFhYWHh4eIiIiKioqMjIyOTU2OTW6OTY6Obk2Obm6ObquOjk2Ojm6Ojo6Oq6uOyOSOyP+QOgCQOjqQOmaQZgCQkJCQtpCQ29uQ2/+RkZGTk5OVlZWXl5eZmZmampqbm5ucnJyenp6fn5+hoaGjo6OlpaWnp6eoqKiqqqqrbk2rbm6rbo6rjk2rq26rq46ryKur5Mir5OSr5P+srKyurq6wsLCxsbGzs7O1tbW2ZgC2//+3t7e5ubm6urq9vb2+vr7Ijk3Ijm7I5KvI/8jI/+TI///bkDrb///kq27k5Kvk/8jk/+Tk///r6+v/tmb/yI7/25D/5Kv//7b//8j//9v//+T////vaehhAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAfoklEQVR4nO2dh38bR3qGkdyl9957lRM7vYKUzkzvxZfEKRQTMXaQ3jslWbYS+NKc3gtpn31Bqi8NVkIZOvMEQhT2f8pO24KdGc0Ks/N9C77PTzaIne/DwtrHs7sg5+UgA4AxA+o3AIAPCApYA0EBayAoYA0EBayBoIA1/Rb03ewa+r+D7t9RKyBo3Ib+7wCCRmQDjha7HUDQiGzA0WK3AwgakQGgB4K6oT42YABBfVAfGzCAoD6ojw0YQFAf1McGDCCoD+pjAwYQ1Af1sQEDCOqD+tiAAQT1QX1swACC+qA+NmDQX0EXu8PhOMvODoaXTlafqefD4dZksXdc79o7Xt3kgfrYgEFvBT27OskWlyfLw3E221l5lkkRs+qjoYWdGQRlQU8FnQsPp+Oza8dCuvqzrC5oPq1uH8vZdesd+Ze3ik2L/ZfkvOt+94CengoqyOfNxf6JnD5Xn1UFnY7EtCpm1/mlO+oUn2+aXzpZ7MoH/WrvbkJ9bECO5bhEdLZLQZeHyi+lZP2ZugbNHdw7FhvyqbWYWcWmfKYVPu8d+8/51McGDHo8g54djHLhzJxZf1adQfPTubxd2j/JjKBidHkEQXtBXwVd7IqrR3PVWX9WF/TacVZswQzaO3oqqDJSntjzC8z6s6xxDZqf+8U16GLvVu0aFIL2gJ4KOhPXmPktuPrks/4sM9egw7G+i9+aqLv4yfKwehcPQXtATwVNAvWxAQMI6oP62IABBPVBfWzAAIL6oD42YABBfVAfGzCAoD6ojw0YQFAfGxCzwW4HSBaJyAYcLXY7gKAR2YCjxW4HEDQi33L+gKB9gtoWAiBon6C2hQAI2ieobSEAgvYJalsIgKB9gtoWAiBon6C2hQAI2ieobSEAgvYJalsIgKB9gtoWAiBoLKzZTPohVjYTtS0EQNBIWLOZ9EMWK5uJ2hYCIGgkrNlM+iGLlc1EbQsBEDQijWym8iFONhO1LQTYkpD4Ec+htNlM5UOcbCZqWwjADBoNSzZT8RApm4naFgIgaCxs2UzmIVY2E7UtBEDQSFizmQo/I2UzUdtCAASNhDWbyWyMlc1EbQsBELRPUNtCAATtE9S2EABB+wS1LQRA0D5BbQsBELRPUNtCAATtE9S2EABB+wS1LQRA0D6xAUeL3Q4gaEQ24Gix2wEEjcjP9R8I6geCEgNB/UBQYiCoHwhKDAT1A0GJgaB+ICgxENQPBCUGgvqBoMRAUD8QlBgI6geCEgNB/TgFXR7KRUMiSaE+oFYTjc1iIbHWrYkOaVgdLhcY2b7Sz1qk31DbFQEI6sc3g0pTGrqorZe1gA5B5zdHvuHG6zmePQhquyIAQf0ECPqsSanbLtev61SFfOPF6+NmktLy6B03TjI9vDx6eTgczfN/5PyoqkR3vmlbxDZs37pyfftYBt+dtctmorYrAhDUz4MF1flIKkCp2Lp/Ypav5wZN9dr3IkkpHxYRYWp4eSjGdkxoyK5Z8i7SGWZq8+5Y5d8VsSKB2UzUdkUgeWxSElIKqtam6wClrJ6qlG/Iz+GVcCV9hp6NRLqdHs5nWzHj6qgQXaVfMqtddaoXaZEsQm1XBDCD+gkWVAUoma25d0as6diEKxU6yRusbTPsElSovjUpBZ3qnhbZTNR2RQCC+gkW9Fr9rns6rsygZbiSDlgSOWAqG9Qzg4oedbJXl7Pj8hSPGdQJBC2pCqqvCs1WbU95DVpLUpqJG5v8HK+vQR2CipcrBZX/XDYVgdlM1HZFAIL6CRZUByjVPwfNz+X6Ll6dq/X5/0XhVO6jGnbOoPKcnuk0JhHfJIpbZTNR2xUBCOoH30kiBoL6gaDEQFA/EJQYCOoHghIDQf1AUGIgqB8ISgwE9QNBiYGgfvot6AYcLXY7gKAR2YCjxW4HEDQiG3C02O0AgkaE+gIyAhDUDwQlBoL6gaDEQFA/EJQYCOoHghIDQf1AUGIgqB8ISgwE9QNBiYGgfiAoMRDUTyRB1UKlbdfyoamMB/HmLqlXGNU2PTAGh9quCEBQP7EEVas5ixSQFQpBH/AKReZY5UV9UNsVAQjqJ6qgi2I95tm1t1cXek5v6nWg5fpQGcVUSV8yeRBm4Mp1MSU/O1aL7B1Q2xUBCOon+gyqcprODi6dzLeLBe9Ts/w9/yMknF96l45i2q0tt19cnpiMpl0p9DwfNqd9SwQQtV0RSB6blIQ4VgmiXoPmpumcJpETUsmukUli4zLWRlHLczLL7esDZzdOXps494oZlENDb2bQuQh20DlN8mJSKimHXptUBNWnbBPFVLk8yBoDOsfRBbVdEYCgfmKe4mfy4lN6JgStz6BF3JgysYxiWhF0ZWB2c+TZLbVdEYCgfmIKKoJAdarS2cGOfMg9FdpOi3RQdQ262LtVRDGtCLqoD5RRzjao7YoABPUT9y4+v+VR9+hnV5+TUU6z4fDpa/IuvgxaVBUqislyii8HlofbxyrnyQW1XRGAoH46+k5S/QPNNVg85RultisCENQPc0FnW97XobYrAhDUD74XTwwE9QNBiYGgfiAoMRDUDwQlBoL6gaDEQFA//RZ0A44Wux1A0IhswNFitwMIGpENOFrsdgBBI0J9ARkBCOoHghIDQf1AUGIgqB8ISgwE9QNBiYGgfiAoMRDUDwQlBoL6gaDEQFA/EJQYCOqnK0EfHFsTWIjfF18HgsYBggYCQf10KOjy6OXhcDQXkXU6qkkHN+n4JbW8c7H3rHhSKdZVKrZJdzigtisCENRPl4Ie7uQqyhXxOqrJBDep+CUV0nRHpTNVinWVjm0qZ1BLBBC1XRFIHpuUhHgidTqDynQR4aOOatLBTWJcxy9lJgCvWqyq9ABO8XUwg8ah6Vw2HevgJhO/tG9S7VZtllUQ1AoEjUNTUDGD6tmzjF+yCqqqIKgVCBqH1UlRRjXp4CaduVQJaaoVV6sg6CoQNA6rM+hz5i5eJzZdvD42d/ENQXUEsx44xF18FQjaBdGimlagtisCENQPBCUGgvrB9+KJgaB+ICgxENQPBCUGgvqBoMRAUD8QlBgI6qffgm7A0WK3AwgakQ04Wux2AEEjsgFHi90OIGhE/pwd/HTg945aAUHjwk8Hfu+oFRA0Lvx04PeOWgFB48JPB37vqBUQNC78dOD3jloBQePCTwd+76gVEDQu/HTg945aAUHjwk8HRu/o9JHfvzAYPNnq1SFoXBjpkKqhhaAX3vR6dvs939nm1SFoXBjpkKqhjaBPimn0hTav3qmgIuJGhtnop+41msFRTnWodWzCSIdUDW1O8S8wE1RoV65HgqAWIKif7gUVy991HJgSVEWHmTwx9Uxs1zlh6mGaT707JmXMCbWOTRjpkKqh74IuLleiGESQmIoO03li+pnODCvDHTKT5eQND6PWsUnymC6e2H3gJ6i8Bh3LwLBctvIUn2/QeWL6mTBWFemHLJupa1cdhGOHWscmjOarVA19n0H1Yy6jEVRGh+k8MRMkpoZUkRRXRYvJQfcOqHVswkiHVA09/qDeCFqbQXV0mMkTK4LE6jOonFz1oHsH1Do24acDv3fUiiSC1q5BdXSYzhPTzxrXoPIErwfdO6DWsQk/Hfi9o1akEbR2F6+iw0yemHq2ehcvM0KHI50y5oRaxyb8dOD3jlpB9p2kKHFN1Do24acDv3fUCggaF3468HtHLk4vDJrfp8f34uPCTwd+78jBvbe+kN1+0+srWyFoXPjpwO8dOTh99PXs3vesTqEQNC78dGD2jgY1qiOYQVPATIcUDeH172XHDN97YtDws+eC9vlocd1Bh+/ove3oUfE90LuNuyQIGreh/zvo8B29jx09ejefPsVpvg4EjdvQ/x10+I7e144e3cQZlPqKswkjHVI1hNe/nx0zfHcweI/GTzpB0Lgw0iFVQ3j9+9vx9kDQuDDSIVVDeP0H2PH2QNC4MNIhVUN4/Qfa8fZA0Lgw0iFVQ3j9B9nx9kDQuDDSIVVDeP0H2/H2QNC4MNIhVUN4/YfY8fZA0Lgw0iFVQ3j9h9rx9kDQuDDSIVVDeP2H2fH2QNC4MNIhVUN4/Yfb8fYkFnQ+HA5FKoNYijQcy9SRLFvs39k7NmvoDSr0Yde76hiCcmgIr/8IO96etILOhG7T3NBZ/s/ZwUilM8xGZsW8WGesmAszxdOZ9NkBtY5NGOmQqiG8/iPt6NHb8idEV9NDkwqq1iHl06aKCxFa7p9UIx10XEMu8dYrYslx/sy7dolaxyaMdEjVEF7/UXYqFXdpf2B5bmZD9UVuqs4QKQStReGtCGqJAKLWsUnyFCSe2I//R9spC5o/bZdY0J36F9OxOMfnfwpBdVpTlum8u7xgCzPoOvWcZlDBx9RYGbz95kZ9UkHNCVwLKm6RFvtvHE2y6gw6FbmL5U3Sjx1B0HXqOQn6sXaKccsESn0Nmi1fvJVbWwhaXATUcp2cUOvYhJEOqRrC6z/OTjHevAKlu4uX9+jyFv7mqMxeLu/i1Sk+F3q243k9ah2bMNIhVUN4/cfbKcZffazZQ/U56Nx86CnDwRaOz0HnutoFtY5NGOmQqiG8/hPsmOH7b7Mkh+I7SXFhpEOqhvD6T7Rjhm2XoBA0Mox0SNUQXv9Jdrw9EDQujHRI1RBe/8l2vD0QNC6MdEjVEF7/KXa8PRA0Lox0SNUQXv+pdrw9EDQujHRI1RBe/2l2vD39FrTPR4vrDjp8R59ux9sDQeM29H8HHb6jz7Dj7YGgcRv6v4MO39Fn2vH29FtQ6ivOJox0SNUQXv9Zdrw9EDQujHRI1RBe/9l2vD0QNC6MdEjVEF7/OXbM8P3nkW7XOYx0SNUQXv+5dszwq09SL/mIDrWOTRjpkKohvP4L7OjR5m/4EEDQuDDSIVVDu/ovrFEdOX30d3GK7xxmOqRoCK//Ijt69PTCk/J3JdWBoHFhpEOqhvD6L7ajR+Uv8tqwX6JArWMTRjqkagiv/xI7evTe90HQ7mGkQ6qG8PovtWOGX2Vwii/WJMWBWscmjHRI1RBe/2V2zPC9J8h/23GxqjMS1Do2YaRDqobw+i+34+2hWRefnR2IcLDF/ktyIWf+7OIzk8WV69vHakDMtJUHJ9Q6NmGkQ6qG8PqvsOPtoclmyqYj8WSxKx/ks63JYncsB2Y7Mq2hfNBYIoCodWySPAWJJ/bj/5V2vM7QZDMJ8/LpVAaE7R2LZyriTs6x+VOdGOZNthNQ69iE0XyVqiG8/qvseHtosplk6M2REbTMYBQn++FwayJCmURomH5wQq1jE0Y6pGoIr/9qO94eumwm+wxaJjHp64E5AmzXquck6NCOt4foLl5fgypBzTWoCLtRA8LK8sH9etQ6NmGkQ6qG8PqvsePtIfocVN/Fa0HzZ4+rGVR8KU7qU3X7PsVd/Lr1nAT9WjveHi7fSTJpi+2g1rEJIx1SNYTXf50dbw8HQZeHQ/+9kBNqHZsw0iFVQ3j919vx9nAQ9OGh1rEJIx1SNYTXf4MdMyx+zUfje50QNC6MdEjVEF7/jXbM8Kurv4JGAEHjwkiHVA3h9d9kR49a82shaGQY6ZCqoV39N9eojtx7wvJ7vCBoZJjpkKIhvP5b7ejR00desMyi/Ra0z0eL6w46fEffZqda0rgOhaBxG/q/gw7f0bfbqZZsmKDUJ/QmjHRI1RBe/x129KgIbbj/O/iYqVsY6ZCqIbz+O+2Y4dsDrIvvHEY6pGoIr/8uO94eCBoXRjqkagiv/2473h4IGhdGOqRqCK//fjveHggaF0Y6pGoIr/8BO94eCBoXRjqkagiv/0E73h4IGhdGOqRqCK//ITveHggaF0Y6pGoIr/8RO94eCBoXRjqkagiv/3E73p61BLUmLS0Phz+q1m+ICBEv5ToP94oP71oQah2bMNIhVUN4/U/Y8fasI6g9aak0CoIGcJ4E/Uk73p41BLUnLYllma+olZoXr1tCmLYmeluWqdAG3WRimRZXrotZWayT3xU9EHS9ek6C/pSdsuD+8zF/HtSRtCSs02vdc79U1pIeEjLnD2pbpgQtmorScS5nrvS7cv/1ayksEUDUOjZJnoLEE7sxP22nLLgd9QeWHUlL6o9MCzkc66ylcijLTP6SFrQYqZTORuKPemXMoOvVc5pBf8ZOMX76+d8bU1BX0pL5k8+sY521VAlhyor8pVVBK6X7bxyZ9AYIul49J0EFP1ujNnT/bX8Q9RTvSFqqz6DXzMVmZQa9Vrk1qghali6PXtk/OTsY10/xFqh1bMJMhxQN4fU/b8cM334s7jWoI2mpcQ1aDolr0PxBbctWBK2UZrPhSEl9eQJB16vnJOgv2NGjp4++HllQe9KS1m15aO7itybVECZ1F6+CREpBl4fyLl6XCjGFpeIVIOh69ZwE/UU7elTkNgwGj6304DtJcWGkQ6qG8PpfslMWxJ5ByaHWsQkjHVI1hNf/sp2yAIJ2DiMdUjWE1/+KHW8PBI0LIx1SNYTX/6odbw8EjQsjHVI1hNf/mh1vDwSNCyMdUjWE1/+6HW8PBI0LIx1SNYTX/4Ydb0+/Be3z0eK6gw7f0W/a8fZA0LgN/d9Bh+/oph1vDwSN29D/HXT4jn7Pjren34L+T+ew86fPgv6hHW8PBIWgazaE1/+RHW8PBIWgazaE1/+xHTN81/JLPiAoBF23Ibz+T+zo0dPPe2d2+82rPRAUgq7ZEF7/p3YqFULSOhAUgq7Z0K7+z2qsjmIGhaDRG8Lr/8JOMX56YdMSliEog4bw+r+0U6m499bN+jU0EJRBQ3j9X9mpliT8LR8q+Ka6Ntm2vEjEhwzNiqaisvLgBYIyaAiv/2s7elT8lo+kM6jMXlABDJnTN7V5Vg14gqCkO+jwHf2NHTOc+rd8iMlTpNgUwUu3TBSTXAd68Rmd3ZAV06vauth71sQ1zYc6xckBBGXQEF7/t3a8PR0KqiKWKqvmyygmuW2rFHRWpDPlW8u4JpHlMDMBO7ZspgSCgofBbsTf2fFa1OVNkopYKnNHymXwMnfkSAoqr0FzZcut9bgmLwkEbfnfzGi+StUQXv/3drw9XQqqIpbK5KZKkIg++6sZVM6l5dZK2Eiu75bPUQjKoCG8/h/seHu6FHT54q1cuQfMoDLpZvvYOoOKF5k3IpwrQFAGDeH1/2TH29Pp56Czm+IevnYNqjNw6tegy8OdytZSUCEnBE28gw7f0T/b8fZ0KqiMWNLJTctDeRdfhjQ9flS5i98dlVsrcU1T3MUn30GH7+hf7Hh76L6TZP+cM+TTzxIIyqAhvP5f7Xh7aARdHg4tdz/2rT4gKIOG8Pp/s+PtwffiIeiaDeH1/27H2wNBIeiaDeH1/2HHDJ9eGET9JQoMgKAMGsLr/9OOHhU/KHL6CH7cDoJGbgiv/y87evSu+Gn6hD9ulwIIyqChXf1/11gd3bQfWO770eK4g+7fkZv7z69G1EPQyA393wGhoPeeaPgJQSM39H8HdIKeXmjcw/ddUFyDMmiIJajVTwgKQddtiCWo+j1JuIuHoJEbIt4kWYCgEHTNBgjqBoIyaICgbiAogwYI6gaCMmiAoG4gKIMGCOoGgjJoYCNoeIySO4RJ/8C8c2FHuxUfEJRDAx9B14pRqtW09NAJBGXQwExQV4ySirMT6zjnl+44Q5jkIuTZW0RQ05XrKrFJrIV/eTgczfN/VI7DcGWjGwjKoIGZoI4YJVEgom5yKWcjdwhTbuy1/72mUprGytYdtSx+d8fk3ahApspGvX9LBFACQcHDQCOoL0ZJFuyfvPbyThFz4whhmqmJUk7DVycieEQUyBg8mT+iA5kqG91vKYGgLf8++c1X/N5RK1rOoM4YpelwuCMmx1t7eoK0hTCpl7k8qVwniPumuqA6kAmCEu2g34J6Y5Sy6W89lV86mnO1JYRJFt0sCsRoVpssy0AmCEq0g54L6opRkhXzoboKdYYwZTryzvSo2Ka6oDqQCYIS7aDngjpjlGSFuIffPq4KWoYwyWvQ4W/nt/rzS2/IoCZ5j18/m0un9V08BCXZQX8FXSX0w8xYH3pagKAMGlgKGhqj1D5uqRUQlEEDS0GZAEEZNEBQNxCUQQMEdQNBGTRAUDcQlEEDBHUDQRk0QFA3G3C02O0AgkZkA44Wux1A0IhswNFitwMIGhFcgzJogKBuICiDBgjqBoIyaICgbiAogwYI6gaCMmiAoG4gKIMGCOoGgjJogKBuICiDBgjqBoIyaICgbiAog4ZzIWgRTNYOCMqg4XwI2gwmCwGCMmg4R4LqXBEdOrY1yXQsmRMIyqDhHAmaz6BiGbxcaS+Wz5+ocDGNJaMqgaDgYYhnBhdBTbSY4OyazirR4WLutgSCtvwP4Tdf8XtHreAiqAkmy1SwiAgdy0y4mLsNgjJoODeCymCys4NxmfbknT0FEJRBw/kR1ASTLS5PZFrz3rEKF3O3QVAGDedHUBFMls2Gw4vXx+VdvDc4B4IyaDgXgj4kEJRBAwR1A0EZNEBQNxCUQQMEdQNBGTRAUDcQlEEDBHUDQRk0QFA3G3C02O0AgkZkA44Wux1A0IhswNFitwMIGhFcgzJogKBuICiDBgjqBoIyaICgbiAogwYI6gaCMmiAoG4gKIMGCOoGgjJogKBuICiDBgjqBoIyaICgbiAog4beCVqmhHhYHjnXGrX4/fIQlEHDuRO0BRCUQUOPBVXRSnIlsQhmUPF1amMu6PLw0okOX1IPZ9feLhZximXx+y+ZhKaLzyC4IekOzpOgalm7FlSkMIigJZW3lAuaf6Gf6Iezg0sn820R2iDWH4sF8eIFinXHlgigBIKChyGeTV0IKnOW8ilRKHl2dWIEvSpN03lLy6MfHhVPzMPBWIirg0W0095rgQSCtvyP5zdf8XtHrehyBhVfKOFMsKLKYhB5S8vDp2+cmCfmQSg8HZeCioQmCJp4B+dI0PoMKoby07bOW8q9m41M+JJ5yAXFDEq9g3MkqL4GFd7Nto/FNaW5rrx0Im6ScvWmo8q2s4Mdfc1qnK5dg1qAoAwaeiyovkefDYdP53PhtLiL35IzpZwjVfiSTmK6+py5i9eC5tsfxwyadgebL+hDo2+j6ng/T4WgDBrOsaDLQ39+LQTl0HB+BG0PBGXQAEHdQFAGDRDUDQRl0ABB3UBQBg0Q1M0GHC12O4CgEdmAo8VuBxA0IhtwtNjtAIJGBNegDBogqBsIyqABgrqBoAwaIKgbCMqgAYK6gaAMGiCoGwjKoAGCuoGgDBogqBsIyqABgrqBoAwaIKgbCMqgoS+CquXw48qW5eFO/u/pTkCpKpfr6S/dqS3ywJKPxDvYXEH35Iq4qnaLyxOrYHKbGLQPQFDKHWy2oJnIWtCLOTM5e4qAm3pGky4tIx2mY9mWFYI+K6dXMc+Oy9eyAUEZNPRLULHwTS92l89eEebVMppMae6k3jLPh0fla+hgJvFKegWywhIBlEBQ8DBEsyq6oPm8qANF5MaZzKhbTRhR16BlrNiNk9cm5WtUkkjyTpziE+9g82dQHclUblzJaDKn+MOx3rI8eseNk3q5/EImPUDQxDvYcEF1+pKZQdWdU2MGlf+eGkGz2c1R5TXMvJrfb9VO8RYgKIOGXgkq7+LLa1CjYjWjqSi9OjFbihv6qqDy4fIEgibeweYKWny4Wbnz1uf9WkZTpVRvWb5YLS/m1eHw4vXx8hB38Ul3sLGCrsHiqYdshKAMGjZf0Jk3f8kHBGXQsPmCPjwQlEEDBHUDQRk0QFA3EJRBAwR1A0EZNEBQNxCUQQMEdbMBR4vdDiBoRDbgaLHbAQSNCE7xDBogqBsIyqABgrqBoAwaIKgbCMqgAYK6gaAMGiCoGwjKoAGCuoGgDBogqBsIyqABgrqBoAwaIKgbCMqgofeCzuUa+LBa7xK5JhCUQUPfBZULOaehhrYDgjJo6LmgaoX88nBsEpquXN8+1l/uv1SGMIl0puXRK3vHouCWXtg5H/qSmSAoi4aeCzov5k6d0LQ7Lr+shDD931H+7/07uaC74yK74dpxNivSGy0RQAkEBQ9DPH+6F9QIVskXaUSNiC2zUTYbmcAGLejVByz3TCBoy/9cfvMVv3fUis4F1cGKjYSmaliTCmHaf0NuqggqTv7eJckQlEFDzwUtrkGdM6gOYcovQGUgY1XQrHqJYAGCMmjouaDlXXyZEloPDNUhTNlsODJPdWiTkBOCJt7BuRO0+By0zFleiVxWIUwmMFwW6NCmKe7ik+/g/AnaIRCUQQMEdQNBGTRAUDcQlEEDBHUDQRk0QFA3EJRBAwR1A0EZNEBQNxCUQQMEdbMBR4vdDiBoRDbgaLHbAQSNyAYcLXY7gKAR2YCjxW4HEBSAcCAoYA0EBayBoIA1EBSwBoIC1kBQwBoIClgDQQFreizo2UFwJtlDIjN5Ot2DzATq9OX9wQJrk/8VeZc1rk1/BRWHtszF6QKZyXO50+Obzbr9P2A69q/bXhe5PrzTaaK/gor0h5ZpjS2RqT3TTgVaXLne5euLv6NOEbkx3e6kv4LKv5sHhTetTbd7WB79Y6eneJEf2OkpHjOoG3Hq6lzQ5eGoy5efjbq9BpVJgftd+tP5jUB/BU0xg54ddOpn/p/QsaBd/x2JS/R5p3dJ/RW0+2tQOQF1yWwo6PD/gbMbHQva/Wmsv4KKs2+3d/Fd+yno+GOmaceneMygHjq//FETXLeSdiyoSmnrkPmw4w9aeywoOA9AUMAaCApYA0EBayAoYA0EBayBoIA1EBSwBoIC1kBQwBoIClgDQQFrIChgDQQFrIGggDUQFLAGggLWQFDAGggKWANBAWsgKGANBAWsgaCANRAUsAaCAtZAUMAaCApY8//T+gLztuzIrAAAAABJRU5ErkJggg==" /><!-- --></p>
+<p>That’s it! You have learned in the above example:</p>
+<ul>
+<li>How to create a directory for your raw HTML source code</li>
+<li>How to save raw HTML source code on your hard drive</li>
+<li>How to use a for-loop to iterate through different pages</li>
+<li>How to implement a Crawl-delay</li>
+<li>How to use XPATH and CSS selectors</li>
+<li>How to combine data frames from different pages into one data frame</li>
+<li>How important it is to pay attention to details such as the HTML code of the first entry of a website</li>
+</ul>
 </div>
 <div id="credits" class="section level2">
 <h2>Credits</h2>
