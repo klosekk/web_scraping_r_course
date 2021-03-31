@@ -51,7 +51,7 @@ Lastly, HTML source code can contain **CSS (Cascading Style Sheets)** which is u
 
 ## XPATH
 
-**XPATH** stands for **X**ML **P**ath **L**anguage and is a web technology that allows the user to extract information from HTML/XML documents. Since their structure is hierarchical, we can move alongside tags in the tree from the highest-order tags (e.g. `/html/body`) to lower-order tags (e.g. `/div/p/ul`). While we can use absolute paths (`/html/body/div/p/ul`), we might also use relative paths using `\/\/` (e.g. `//p/ul`). This means that we extract information from all `<ul>` which are a node below all `<p>`. We however disregard those `<ul>` which are not connected with a `<p>`.
+**XPATH** stands for **X**ML **P**ath **L**anguage and is a web technology that allows the user to extract information from HTML/XML documents. Since their structure is hierarchical, we can move alongside tags in the tree from the highest-order tags (e.g. `/html/body`) to lower-order tags (e.g. `/div/p/ul`). While we can use absolute paths (`/html/body/div/p/ul`), we might also use relative paths using `//` (e.g. `//p/ul`). This means that we extract information from all `<ul>` which are a node below all `<p>`. We however disregard those `<ul>` which are not connected with a `<p>`.
 
 XPATH uses some characters with special meaning:
 
@@ -147,6 +147,7 @@ Now it is time to use the power of the rvest package. Load the rvest package and
 ```r
 library(rvest)
 library(tidyverse)
+library(httr)
 ```
 
 We create now a variable url, where we store the link to our article. We then use the `read_html()` function to download the HTML source code. Under the hood, the function already parses the source code into a DOM object with tree-structure. We store the DOM in the object page.
@@ -229,6 +230,74 @@ Now the long and tedious part begins. We have to conduct the following steps:
 
 **Caution**: Unfortunately, there can be in very seldom cases missing information for categories. Here, I include a loop with sapply that loops over the lowest common node that each article must have. Then, I executed another loop to validate that the desired node was indeed available. If not, I imputed an `NA`.
 
+Before we start executing program that loops through the different pages, I create a custom function to clean the data that we extract for authors. It removes unnecessary text and produces as output a tibble.
+
+
+```r
+CleanAuthorText <- function(x, firstPage = i){
+  
+  # Different extraction rule for the first page
+  if(firstPage == 1){
+    RegEx <- "\\tBy .*" # First article on the first page does not end with \\n
+  } else {
+    RegEx <- "\\tBy .*?\\n" 
+  }
+  
+  x <- 
+    x %>% 
+    str_extract(pattern = RegEx) %>% # Extract author names
+    str_remove(pattern = "\\tBy ") %>% # Remove unnecessary text
+    str_remove(pattern = "\\n") %>% # Remove unnecessary text
+    str_split(pattern = ", | and ", simplify = TRUE) %>% # Split author names in separate columns
+    as_tibble() %>% # Create a tibble
+    na_if(y = "") # Remove empty strings with NAs
+  return(x)
+}
+```
+
+I create a second custom function to take the tibble with author names and to collapse it into a vector.
+
+
+```r
+CreateAuthorVectorFromTable <- function(x){
+    if(ncol(x) == 1) { # If there is only one author, just pull the column as vector
+    x <- 
+      x %>% 
+      pull(1)
+    } else { #If there are multiple authors, then collapse rows into strings
+      x <- 
+        apply(x, 1, paste, collapse = ", ") %>%  # For-loop for each row
+        str_remove_all(pattern = ", NA") # Remove unnecessary text
+    }
+  return(x)
+}
+```
+
+I create a third custom function which loops over the elements we extract from the nodes and checks if they are empty. In such a case, the function assigns an `NA` into the vector. We need this function for extracting information on categories. Be aware that we define here two input variables, x and the selector.
+
+
+```r
+CorrectMissingElements <- function(x,selector) {
+  x <- 
+    sapply(x, # Loop over each element separately
+                     function(y){ # Apply the following function
+                       y %>%  # Take an element
+                         html_nodes(selector) %>% # Extract from the element the node you need
+                         html_text(trim = TRUE) # Convert to text
+                       }
+                     ) %>% # Pass the resulting element to the next function
+    sapply(function(y) # Apply the function to the retrieved element
+      ifelse(length(y) == 0, NA, y)) # Check if the element is empty. If yes, insert an NA
+  
+  attributes(x) <- NULL # Remove attributes from the final vector
+  return(x)
+}
+```
+
+
+
+Let us now implement the web extraction process!
+
 
 ```r
 for (i in 1:10) {
@@ -260,68 +329,40 @@ for (i in 1:10) {
   }
   
   # Retrieve titles
-  title <- 
+  titles <- 
     page %>% 
     html_elements(css = ".article-title a") %>% 
     html_text(trim = TRUE)
 
   # Retrieve dates
-  date <- 
+  dates <- 
     page %>% 
     html_elements(xpath = "//div[@class='post-info']/p/time") %>% 
     html_text(trim = TRUE)
   
   # Retrieve links
-  link <- 
+  links <- 
     page %>% 
     html_elements(xpath = "//h2[@class='article-title entry-title']/a") %>% 
     html_attr("href")
   
-  
   # Retrieve authors
-  author <- 
+  authors <- 
     page %>% 
     html_elements(css = ".tease-meta-content") %>% # Must use ".tease-meta-content" instead of ".fn" to retain information that authors belong to one element in the HTML source code
     html_text() %>% 
-    str_extract(pattern = "\\tBy .*?\\n") %>% # Extract author names
-    str_remove(pattern = "\\tBy ") %>% # Remove unnecessary text
-    str_remove(pattern = "\\n") %>% # Remove unnecessary text
-    str_split(pattern = ", | and ", simplify = TRUE) %>% # Split author names in separate columns
-    as_tibble() %>% # Create a tibble
-    na_if(y = "") # Remove empty strings with NAs
-
-    ## Collapse rows with author names into one cell
-    if(ncol(author) == 1) { # If there is only one author, just pull the column as vector
-      author <- 
-        author %>% 
-        pull(1)
-      } else { #If there are multiple authors, then collapse rows into strings
-        author <- 
-          apply(author, 1, paste, collapse = ", ") %>%  # For-loop for each row
-          str_remove_all(pattern = ", NA") # Remove unnecessary text
-    }
+    CleanAuthorText(firstPage = i) %>% 
+    CreateAuthorVectorFromTable()
 
   # Retrieve categories
   
   ## Retrieve node that all articles share
   category <- 
   page %>% 
-  html_elements(xpath = "//div[starts-with(@id,'post-')]")
+  html_elements(xpath = "//div[starts-with(@id,'post-')]") %>% 
+  CorrectMissingElements(selector = ".post-info .term")
   
-  
-  ## Loop over the elements
-  category <- sapply(category, # Loop over each element separately
-                     function(x){ # Apply the following function
-                       x %>%  # Take an element
-                         html_nodes(".post-info .term") %>% # Extract from the element the node you need
-                         html_text(trim = TRUE) # Convert to text
-                       }
-                     ) %>% # Pass the resulting element to the next function
-    sapply(function(x) # Apply the function to the retrieved element
-      ifelse(length(x) == 0, NA, x)) # Check if the element is empty. If yes, insert an NA
-  
-  attributes(category) <- NULL # Remove attributes from the final vector
-  
+
   ####################################
   # Retrieve details from the first article on the first page
   # For details, see explanations in the code above
@@ -330,38 +371,25 @@ for (i in 1:10) {
     
     # First author
     
-    author1 <- 
+    authors1 <- 
     page %>% 
     html_element(css = ".vcard") %>% 
-    html_text() %>% 
-    str_remove(pattern = "\\tBy ") %>% 
-    str_remove(pattern = "\\n") %>% # Remove unnecessary text
-    str_split(pattern = ", | and ", simplify = TRUE) %>% 
-    as_tibble() %>% 
-    na_if(y = "")
-
-  if(ncol(author1) == 1) {
-    author1 <- 
-      author1 %>% 
-      pull(1)
-    } else {
-      author1 <- 
-        apply(author1, 1, paste, collapse = ", ") %>% 
-        str_remove_all(pattern = ", NA")
-    }
+    html_text()  %>% 
+    CleanAuthorText(firstPage = i) %>% 
+    CreateAuthorVectorFromTable()
     
-      author <- c(author1,author)
+    authors <- c(authors1,authors)
       
     # Retrieve date for the first post
       
-    date1 <- 
+    dates1 <- 
       page %>% 
       html_elements(xpath = "//time[@class='updated visually-hidden']") %>% 
       html_text(trim = TRUE) %>% 
       str_remove(pattern = ",.*") %>% 
       str_c(", ", format(Sys.Date(), "%Y"))
     
-    date <- c(date1,date)
+    dates <- c(dates1,dates)
     
     # Update empty category
     
@@ -369,7 +397,7 @@ for (i in 1:10) {
   } 
   
   ####################################
-  dfs[[i]] <- data.frame(title = title, author = author, date = date, category = category, link = link)
+  dfs[[i]] <- data.frame(title = titles, author = authors, date = dates, category = category, link = links)
   
   Sys.sleep(time = 12 + rnorm(n = 1, mean = 0, sd = 2))
   
@@ -392,38 +420,38 @@ for (i in 1:10) {
 ```r
 dat <- as.data.frame(data.table::rbindlist(dfs)) %>% 
   mutate(author = ifelse(test = author == "NA", yes = "A FiveThirtyEight Chat", no = author))  %>% # Replace NAs in our dataset by A FiveThirtyEight Chat
-  filter(category != "Politics Podcast") # Remove the Politics Podcast
+  filter(category != "Politics Podcast" | is.na(category)) # Remove the Politics Podcast
 ```
 
 We did it! We created our dataset containing information about published articles on the first ten pages FiveThirtyEight website. We can now have a look how the dataset looks like:
 
 
 ```r
-head(dat)
+head(dat, )
 ```
 
 ```
-##                                                                                   title
-## 1                      Do You Buy That … Stricter Voting Laws Will Benefit Republicans?
-## 2                                   COVID-19 Reminded Us Of Just How Unequal America Is
-## 3                            The States Where Efforts To Restrict Voting Are Escalating
-## 4                                       Why Georgia’s New Voting Law Is Such A Big Deal
-## 5                                             QAnon Has Become The Cult That Cries Wolf
-## 6 What Americans Think About D.C. Statehood, Anti-Asian Discrimination And LGBTQ Rights
-##                                        author          date        category
-## 1                                 Nate Silver Mar. 29, 2021 Do You Buy That
-## 2                              Neil Lewis Jr. Mar. 29, 2021        COVID-19
-## 3 Alex Samuels, Elena Mejía, Nathaniel Rakich Mar. 29, 2021   Voting Rights
-## 4                             Perry Bacon Jr. Mar. 26, 2021   Voting Rights
-## 5                              Kaleigh Rogers Mar. 26, 2021          Q Anon
-## 6                            Geoffrey Skelley Mar. 26, 2021    Pollapalooza
-##                                                                                                                        link
-## 1                         https://fivethirtyeight.com/videos/do-you-buy-that-stricter-voting-laws-will-benefit-republicans/
-## 2                                 https://fivethirtyeight.com/features/covid-19-reminded-us-of-just-how-unequal-america-is/
-## 3                          https://fivethirtyeight.com/features/the-states-where-efforts-to-restrict-voting-are-escalating/
-## 4                                      https://fivethirtyeight.com/features/why-georgias-new-voting-law-is-such-a-big-deal/
-## 5                                           https://fivethirtyeight.com/features/qanon-has-become-the-cult-that-cries-wolf/
-## 6 https://fivethirtyeight.com/features/what-americans-think-about-d-c-statehood-anti-asian-discrimination-and-lgbtq-rights/
+##                                                              title
+## 1                     A Very Early Look At The 2022 Governor Races
+## 2                        How Democrats Became Stuck On Immigration
+## 3 Do You Buy That … Stricter Voting Laws Will Benefit Republicans?
+## 4              COVID-19 Reminded Us Of Just How Unequal America Is
+## 5       The States Where Efforts To Restrict Voting Are Escalating
+## 6                  Why Georgia’s New Voting Law Is Such A Big Deal
+##                                        author           date        category
+## 1                            Geoffrey Skelley March 30, 2021            <NA>
+## 2                                Alex Samuels  Mar. 30, 2021     Immigration
+## 3                                 Nate Silver  Mar. 29, 2021 Do You Buy That
+## 4                              Neil Lewis Jr.  Mar. 29, 2021        COVID-19
+## 5 Alex Samuels, Elena Mejía, Nathaniel Rakich  Mar. 29, 2021   Voting Rights
+## 6                             Perry Bacon Jr.  Mar. 26, 2021   Voting Rights
+##                                                                                                link
+## 1                https://fivethirtyeight.com/features/a-very-early-look-at-the-2022-governor-races/
+## 2                   https://fivethirtyeight.com/features/how-democrats-became-stuck-on-immigration/
+## 3 https://fivethirtyeight.com/videos/do-you-buy-that-stricter-voting-laws-will-benefit-republicans/
+## 4         https://fivethirtyeight.com/features/covid-19-reminded-us-of-just-how-unequal-america-is/
+## 5  https://fivethirtyeight.com/features/the-states-where-efforts-to-restrict-voting-are-escalating/
+## 6              https://fivethirtyeight.com/features/why-georgias-new-voting-law-is-such-a-big-deal/
 ```
 
 Theoretically, we can now make some brief descriptive analysis. For instance, let us have a look at who were the top five contributors to the blog in the recent weeks and in which categories those articles were placed.

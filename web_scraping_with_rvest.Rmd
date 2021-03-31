@@ -220,6 +220,71 @@ Now the long and tedious part begins. We have to conduct the following steps:
 
 **Caution**: Unfortunately, there can be in very seldom cases missing information for categories. Here, I include a loop with sapply that loops over the lowest common node that each article must have. Then, I executed another loop to validate that the desired node was indeed available. If not, I imputed an `NA`.
 
+Before we start executing program that loops through the different pages, I create a custom function to clean the data that we extract for authors. It removes unnecessary text and produces as output a tibble.
+
+```{r Create author cleaning function}
+CleanAuthorText <- function(x, firstPage = i){
+  
+  # Different extraction rule for the first page
+  if(firstPage == 1){
+    RegEx <- "\\tBy .*" # First article on the first page does not end with \\n
+  } else {
+    RegEx <- "\\tBy .*?\\n" 
+  }
+  
+  x <- 
+    x %>% 
+    str_extract(pattern = RegEx) %>% # Extract author names
+    str_remove(pattern = "\\tBy ") %>% # Remove unnecessary text
+    str_remove(pattern = "\\n") %>% # Remove unnecessary text
+    str_split(pattern = ", | and ", simplify = TRUE) %>% # Split author names in separate columns
+    as_tibble() %>% # Create a tibble
+    na_if(y = "") # Remove empty strings with NAs
+  return(x)
+}
+```
+
+I create a second custom function to take the tibble with author names and to collapse it into a vector.
+
+```{r Create author collapsing function}
+CreateAuthorVectorFromTable <- function(x){
+    if(ncol(x) == 1) { # If there is only one author, just pull the column as vector
+    x <- 
+      x %>% 
+      pull(1)
+    } else { #If there are multiple authors, then collapse rows into strings
+      x <- 
+        apply(x, 1, paste, collapse = ", ") %>%  # For-loop for each row
+        str_remove_all(pattern = ", NA") # Remove unnecessary text
+    }
+  return(x)
+}
+```
+
+I create a third custom function which loops over the elements we extract from the nodes and checks if they are empty. In such a case, the function assigns an `NA` into the vector. We need this function for extracting information on categories. Be aware that we define here two input variables, x and the selector.
+
+```{r Define function inserting NAs for missing elements}
+CorrectMissingElements <- function(x,selector) {
+  x <- 
+    sapply(x, # Loop over each element separately
+                     function(y){ # Apply the following function
+                       y %>%  # Take an element
+                         html_nodes(selector) %>% # Extract from the element the node you need
+                         html_text(trim = TRUE) # Convert to text
+                       }
+                     ) %>% # Pass the resulting element to the next function
+    sapply(function(y) # Apply the function to the retrieved element
+      ifelse(length(y) == 0, NA, y)) # Check if the element is empty. If yes, insert an NA
+  
+  attributes(x) <- NULL # Remove attributes from the final vector
+  return(x)
+}
+```
+
+
+
+Let us now implement the web extraction process!
+
 ```{r Extract information, eval=TRUE, warning=FALSE}
 for (i in 1:10) {
   
@@ -267,51 +332,23 @@ for (i in 1:10) {
     html_elements(xpath = "//h2[@class='article-title entry-title']/a") %>% 
     html_attr("href")
   
-  
   # Retrieve authors
   authors <- 
     page %>% 
     html_elements(css = ".tease-meta-content") %>% # Must use ".tease-meta-content" instead of ".fn" to retain information that authors belong to one element in the HTML source code
     html_text() %>% 
-    str_extract(pattern = "\\tBy .*?\\n") %>% # Extract author names
-    str_remove(pattern = "\\tBy ") %>% # Remove unnecessary text
-    str_remove(pattern = "\\n") %>% # Remove unnecessary text
-    str_split(pattern = ", | and ", simplify = TRUE) %>% # Split author names in separate columns
-    as_tibble() %>% # Create a tibble
-    na_if(y = "") # Remove empty strings with NAs
-
-    ## Collapse rows with author names into one cell
-    if(ncol(authors) == 1) { # If there is only one author, just pull the column as vector
-      authors <- 
-        authors %>% 
-        pull(1)
-      } else { #If there are multiple authors, then collapse rows into strings
-        authors <- 
-          apply(authors, 1, paste, collapse = ", ") %>%  # For-loop for each row
-          str_remove_all(pattern = ", NA") # Remove unnecessary text
-    }
+    CleanAuthorText(firstPage = i) %>% 
+    CreateAuthorVectorFromTable()
 
   # Retrieve categories
   
   ## Retrieve node that all articles share
   category <- 
   page %>% 
-  html_elements(xpath = "//div[starts-with(@id,'post-')]")
+  html_elements(xpath = "//div[starts-with(@id,'post-')]") %>% 
+  CorrectMissingElements(selector = ".post-info .term")
   
-  
-  ## Loop over the elements
-  category <- sapply(category, # Loop over each element separately
-                     function(x){ # Apply the following function
-                       x %>%  # Take an element
-                         html_nodes(".post-info .term") %>% # Extract from the element the node you need
-                         html_text(trim = TRUE) # Convert to text
-                       }
-                     ) %>% # Pass the resulting element to the next function
-    sapply(function(x) # Apply the function to the retrieved element
-      ifelse(length(x) == 0, NA, x)) # Check if the element is empty. If yes, insert an NA
-  
-  attributes(category) <- NULL # Remove attributes from the final vector
-  
+
   ####################################
   # Retrieve details from the first article on the first page
   # For details, see explanations in the code above
@@ -323,24 +360,11 @@ for (i in 1:10) {
     authors1 <- 
     page %>% 
     html_element(css = ".vcard") %>% 
-    html_text() %>% 
-    str_remove(pattern = "\\tBy ") %>% 
-    str_remove(pattern = "\\n") %>% # Remove unnecessary text
-    str_split(pattern = ", | and ", simplify = TRUE) %>% 
-    as_tibble() %>% 
-    na_if(y = "")
-
-  if(ncol(authors1) == 1) {
-    authors1 <- 
-      authors1 %>% 
-      pull(1)
-    } else {
-      author1 <- 
-        apply(author1, 1, paste, collapse = ", ") %>% 
-        str_remove_all(pattern = ", NA")
-    }
+    html_text()  %>% 
+    CleanAuthorText(firstPage = i) %>% 
+    CreateAuthorVectorFromTable()
     
-      authors <- c(authors1,authors)
+    authors <- c(authors1,authors)
       
     # Retrieve date for the first post
       
@@ -367,7 +391,7 @@ for (i in 1:10) {
 
 dat <- as.data.frame(data.table::rbindlist(dfs)) %>% 
   mutate(author = ifelse(test = author == "NA", yes = "A FiveThirtyEight Chat", no = author))  %>% # Replace NAs in our dataset by A FiveThirtyEight Chat
-  filter(category != "Politics Podcast") # Remove the Politics Podcast
+  filter(category != "Politics Podcast" | is.na(category)) # Remove the Politics Podcast
 
 ```
 
