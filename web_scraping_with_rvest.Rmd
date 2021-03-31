@@ -53,7 +53,7 @@ Lastly, HTML source code can contain **CSS (Cascading Style Sheets)** which is u
 
 ## XPATH
 
-**XPATH** stands for **X**ML **P**ath **L**anguage and is a web technology that allows the user to extract information from HTML/XML documents. Since their structure is hierarchical, we can move alongside tags in the tree from the highest-order tags (e.g. `/html/body`) to lower-order tags (e.g. `/div/p/ul`). While we can use absolute paths (`/html/body/div/p/ul`), we might also use relative paths using `\/\/` (e.g. `//p/ul`). This means that we extract information from all `<ul>` which are a node below all `<p>`. We however disregard those `<ul>` which are not connected with a `<p>`.
+**XPATH** stands for **X**ML **P**ath **L**anguage and is a web technology that allows the user to extract information from HTML/XML documents. Since their structure is hierarchical, we can move alongside tags in the tree from the highest-order tags (e.g. `/html/body`) to lower-order tags (e.g. `/div/p/ul`). While we can use absolute paths (`/html/body/div/p/ul`), we might also use relative paths using `//` (e.g. `//p/ul`). This means that we extract information from all `<ul>` which are a node below all `<p>`. We however disregard those `<ul>` which are not connected with a `<p>`.
 
 XPATH uses some characters with special meaning:
 
@@ -147,6 +147,7 @@ Now it is time to use the power of the rvest package. Load the rvest package and
 ```{r Load rvest into namespace, message=FALSE}
 library(rvest)
 library(tidyverse)
+library(httr)
 ```
 
 We create now a variable url, where we store the link to our article. We then use the `read_html()` function to download the HTML source code. Under the hood, the function already parses the source code into a DOM object with tree-structure. We store the DOM in the object page.
@@ -249,26 +250,26 @@ for (i in 1:10) {
   }
   
   # Retrieve titles
-  title <- 
+  titles <- 
     page %>% 
     html_elements(css = ".article-title a") %>% 
     html_text(trim = TRUE)
 
   # Retrieve dates
-  date <- 
+  dates <- 
     page %>% 
     html_elements(xpath = "//div[@class='post-info']/p/time") %>% 
     html_text(trim = TRUE)
   
   # Retrieve links
-  link <- 
+  links <- 
     page %>% 
     html_elements(xpath = "//h2[@class='article-title entry-title']/a") %>% 
     html_attr("href")
   
   
   # Retrieve authors
-  author <- 
+  authors <- 
     page %>% 
     html_elements(css = ".tease-meta-content") %>% # Must use ".tease-meta-content" instead of ".fn" to retain information that authors belong to one element in the HTML source code
     html_text() %>% 
@@ -280,13 +281,13 @@ for (i in 1:10) {
     na_if(y = "") # Remove empty strings with NAs
 
     ## Collapse rows with author names into one cell
-    if(ncol(author) == 1) { # If there is only one author, just pull the column as vector
-      author <- 
-        author %>% 
+    if(ncol(authors) == 1) { # If there is only one author, just pull the column as vector
+      authors <- 
+        authors %>% 
         pull(1)
       } else { #If there are multiple authors, then collapse rows into strings
-        author <- 
-          apply(author, 1, paste, collapse = ", ") %>%  # For-loop for each row
+        authors <- 
+          apply(authors, 1, paste, collapse = ", ") %>%  # For-loop for each row
           str_remove_all(pattern = ", NA") # Remove unnecessary text
     }
 
@@ -319,7 +320,7 @@ for (i in 1:10) {
     
     # First author
     
-    author1 <- 
+    authors1 <- 
     page %>% 
     html_element(css = ".vcard") %>% 
     html_text() %>% 
@@ -329,9 +330,9 @@ for (i in 1:10) {
     as_tibble() %>% 
     na_if(y = "")
 
-  if(ncol(author1) == 1) {
-    author1 <- 
-      author1 %>% 
+  if(ncol(authors1) == 1) {
+    authors1 <- 
+      authors1 %>% 
       pull(1)
     } else {
       author1 <- 
@@ -339,18 +340,18 @@ for (i in 1:10) {
         str_remove_all(pattern = ", NA")
     }
     
-      author <- c(author1,author)
+      authors <- c(authors1,authors)
       
     # Retrieve date for the first post
       
-    date1 <- 
+    dates1 <- 
       page %>% 
       html_elements(xpath = "//time[@class='updated visually-hidden']") %>% 
       html_text(trim = TRUE) %>% 
       str_remove(pattern = ",.*") %>% 
       str_c(", ", format(Sys.Date(), "%Y"))
     
-    date <- c(date1,date)
+    dates <- c(dates1,dates)
     
     # Update empty category
     
@@ -358,7 +359,7 @@ for (i in 1:10) {
   } 
   
   ####################################
-  dfs[[i]] <- data.frame(title = title, author = author, date = date, category = category, link = link)
+  dfs[[i]] <- data.frame(title = titles, author = authors, date = dates, category = category, link = links)
   
   Sys.sleep(time = 12 + rnorm(n = 1, mean = 0, sd = 2))
   
