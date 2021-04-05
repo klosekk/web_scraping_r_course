@@ -79,7 +79,7 @@ XPATH also the ability to create very precise paths by specifying unique relatio
 | self               | Selects the current node                                                                                                     |
 
 
-For instance, the expression `//p/ancestor::a` selects all those `<a>` nodes which have somewhere in their branch a lower-order `<p>` node. The expression `//div/parent::title` selects those `<div>` nodes with `<title>` as their parent.
+For instance, the expression `//p/ancestor::a` selects all those `<p>` nodes which have somewhere in their branch a lower-order `<a>` node. The expression `//div/parent::title` selects those `<div>` nodes with `<title>` as their parent.
   
 Lastly, we can use **predicates** in brackets `[]` to create numeric or textual conditional TRUE/FALSE statements. The following expressions are a non-exhaustive list of the probably most useful predicates:
 
@@ -431,27 +431,27 @@ head(dat, )
 ```
 
 ```
-##                                                              title
-## 1                     A Very Early Look At The 2022 Governor Races
-## 2                        How Democrats Became Stuck On Immigration
-## 3 Do You Buy That … Stricter Voting Laws Will Benefit Republicans?
-## 4              COVID-19 Reminded Us Of Just How Unequal America Is
-## 5       The States Where Efforts To Restrict Voting Are Escalating
-## 6                  Why Georgia’s New Voting Law Is Such A Big Deal
-##                                        author           date        category
-## 1                            Geoffrey Skelley March 30, 2021            <NA>
-## 2                                Alex Samuels  Mar. 30, 2021     Immigration
-## 3                                 Nate Silver  Mar. 29, 2021 Do You Buy That
-## 4                              Neil Lewis Jr.  Mar. 29, 2021        COVID-19
-## 5 Alex Samuels, Elena Mejía, Nathaniel Rakich  Mar. 29, 2021   Voting Rights
-## 6                             Perry Bacon Jr.  Mar. 26, 2021   Voting Rights
-##                                                                                                link
-## 1                https://fivethirtyeight.com/features/a-very-early-look-at-the-2022-governor-races/
-## 2                   https://fivethirtyeight.com/features/how-democrats-became-stuck-on-immigration/
-## 3 https://fivethirtyeight.com/videos/do-you-buy-that-stricter-voting-laws-will-benefit-republicans/
-## 4         https://fivethirtyeight.com/features/covid-19-reminded-us-of-just-how-unequal-america-is/
-## 5  https://fivethirtyeight.com/features/the-states-where-efforts-to-restrict-voting-are-escalating/
-## 6              https://fivethirtyeight.com/features/why-georgias-new-voting-law-is-such-a-big-deal/
+##                                                                                          title
+## 1                                       Why Being ‘Anti-Media’ Is Now Part Of The GOP Identity
+## 2                            Americans Oppose Many Voting Restrictions — But Not Voter ID Laws
+## 3      Why The Recent Violence Against Asian Americans May Solidify Their Support Of Democrats
+## 4                                    Why Democrats Weren’t Going To Reverse The Result In Iowa
+## 5 Police Misconduct Trials Are Rare. Instead, Cities Pay Millions To Settle Misconduct Claims.
+## 6                            Why Joe Manchin Is So Willing And Able To Block His Party’s Goals
+##                       author          date                      category
+## 1            Meredith Conroy April 5, 2021                          <NA>
+## 2           Nathaniel Rakich  Apr. 2, 2021                 Voting Rights
+## 3             Michael Tesler  Apr. 1, 2021 Asian American Discrimination
+## 4           Geoffrey Skelley Mar. 31, 2021                      Congress
+## 5 Galen Druke, Laura Bronner Mar. 31, 2021               Police Violence
+## 6            Perry Bacon Jr. Mar. 31, 2021                      Congress
+##                                                                                                                            link
+## 1                                    https://fivethirtyeight.com/features/why-being-anti-media-is-now-part-of-the-gop-identity/
+## 2                         https://fivethirtyeight.com/features/americans-oppose-many-voting-restrictions-but-not-voter-id-laws/
+## 3 https://fivethirtyeight.com/features/why-the-recent-violence-against-asian-americans-may-solidify-their-support-of-democrats/
+## 4                                https://fivethirtyeight.com/features/why-democrats-werent-going-to-reverse-the-result-in-iowa/
+## 5 https://fivethirtyeight.com/videos/police-misconduct-trials-are-rare-instead-cities-pay-millions-to-settle-misconduct-claims/
+## 6                        https://fivethirtyeight.com/features/why-joe-manchin-is-so-willing-and-able-to-block-his-partys-goals/
 ```
 
 Theoretically, we can now make some brief descriptive analysis. For instance, let us have a look at who were the top five contributors to the blog in the recent weeks and in which categories those articles were placed.

@@ -81,7 +81,7 @@ XPATH also the ability to create very precise paths by specifying unique relatio
 | self               | Selects the current node                                                                                                     |
 
 
-For instance, the expression `//p/ancestor::a` selects all those `<a>` nodes which have somewhere in their branch a lower-order `<p>` node. The expression `//div/parent::title` selects those `<div>` nodes with `<title>` as their parent.
+For instance, the expression `//p/ancestor::a` selects all those `<p>` nodes which have somewhere in their branch a lower-order `<a>` node. The expression `//div/parent::title` selects those `<div>` nodes with `<title>` as their parent.
   
 Lastly, we can use **predicates** in brackets `[]` to create numeric or textual conditional TRUE/FALSE statements. The following expressions are a non-exhaustive list of the probably most useful predicates:
 
