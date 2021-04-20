@@ -173,8 +173,8 @@ content <- rawToChar(res$content)
 output <- fromJSON(content)
 str(output, max.level = 1)
 output[[2]] # Amount of asteroids
-output$near_earth_objects[[1]][[2]] # List of asteroid ids
-asteroid_id <- output$near_earth_objects[[1]][[2]][1]
+output$near_earth_objects[[1]][[1]] # List of asteroid ids
+asteroid_id <- output$near_earth_objects[[1]][[1]][[2]]
 ```
 
 We can see that on the 2nd January 2021, NASA registered 20 near-earth asteroids. Let's look up some data on the first asteroid.
@@ -185,8 +185,7 @@ api_path <- paste0("/neo/rest/v1/neo/",asteroid_id)
 query <- list(api_key = "DEMO_KEY")
 asteroid <- GET(url = root, path = api_path, query = query)
 asteroid
-asteroid <- rawToChar(asteroid$content)
-asteroid <- fromJSON(asteroid)
+asteroid <- rawToChar(asteroid$content) %>% fromJSON()
 asteroid$name
 asteroid$is_potentially_hazardous_asteroid
 ```
