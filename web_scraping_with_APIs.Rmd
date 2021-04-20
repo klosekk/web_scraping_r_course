@@ -171,7 +171,7 @@ We can see in the output that our retrieval process worked out. Status is "200" 
 ```{r Print data}
 content <- rawToChar(res$content)
 output <- fromJSON(content)
-str(output ,max.level = 1)
+str(output, max.level = 1)
 output[[2]] # Amount of asteroids
 output$near_earth_objects[[1]][[2]] # List of asteroid ids
 asteroid_id <- output$near_earth_objects[[1]][[2]][1]
