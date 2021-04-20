@@ -1,0 +1,223 @@
+---
+title: "Webscraping with APIs"
+author: "Kamil Klosek"
+date: "4/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## APIs - Introduction
+
+APIs are application programming interfaces that allow our computers to communicate with servers that host data which we want to retrieve. In general, APIs are waiting for your input/requests so they will only act, if you want something from them. In such a situation the program we use to communicate with the server is called "client". 
+
+### Request-Response Cycle
+
+The communication between the client and the API is strictly rule-based, whereby the majority of API providers use HTTP (Hyper-Text Transfer Protocol). The process follows a Request-Response Cycle where each complete **HTTP request** contains four types of information:
+
+1. URL (Uniform Resource Locator)
+2. Method
+3. List of Headers (meta information of our request such as user-agent, or the *Accept Header* telling the API which data formats can be accepted by the client)
+4. Body (information about the data we want to retrieve/send/modify)
+
+### Method
+
+The **Method** request can be further subdivided in different types of which four are the most commonly used ones:
+
+1. GET - Asks the server to retrieve a resource
+2. POST - Asks the server to create a new resource
+3. PUT - Asks the server to edit/update an existing resource
+4. DELETE - Asks the server to delete a resource
+
+### Response
+
+After we send our HTTP request, we receive an **HTTP response**:
+
+1. Status code (404 - not found; 503 - website is down; 200 - request went well; 401 - authentication failed)
+2. List of Headers
+3. Body
+
+Once we receive the response from the API, the Request-Response Cycle is over and we have to start it anew with a new request. Generally, we receive data from the API in text format (typically in **JSON** or **XML**). The  *Content-Type* header contains information what type the text data is which the API sends to us such as "application/json". 
+
+### Authentification
+
+In order to authenticate the client at the API, we have to provide our credentials. There is no one standard authentication procedure and it can vary across APIs. The most frequently implemented authentication procedures are:
+
+1. **Basic Authentication**: We provide a *username* and a *password* that are combined into one single value and provided by the HTTP header **Authorization**
+2. **Key Authentication**: The API or website provides us with a unique authentication key. Every API handles the key in its own way, there is no standardized process how to pass on the API key.
+3. **Open Authorization (OAuth) - OAuth 2**: We first tell the server that we want to connect to it (e.g. on the website). The client (e.g. our browser) sends the server a *callback URL* and we can log in with our credentials (username and password). When we log in, then we receive the callback URL back including a hidden authorization code. With the authorization code, we make another request to the server containing a secret key. When the server receives the authorization code and the client secret key, it sends us an *access token* (with an expiration date). With the token, we can access the data on the server through the API.
+3. **Open Authorization (OAuth) - OAuth 1**: OAuth 1 works like OAuth 2 with the difference that in OAuth 1 we also receive a *request token* at the beginning and we need to provide a digital signature. As many websites use HTTPS, OAuth 2 skips the additional verification step in providing a digital signature.
+
+When using OAuth 2, we ask at the beginning for permissions (also called **scope**) which limit our access to available data.
+
+### REST APIs
+
+There are different types of APIs, however, the most widely used one are **REST APIs** (Representational State Transfer). When accessing REST APIs, then we use URLs to identify in which resources we are interested. There are typically two ways how to identify resources:
+
+1. Hierarchical structures expand the URL and clearly designate each resource, e.g. /resource1/4/resource2/3 - resource1 and resource2 represent data pools (e.g. order, client name, city, etc.) the numbers 4 and 3 designate which element in those resources we chose.
+2. Flat structures focus on providing information within the data that is sent to the server instead of listing it within the URL.
+
+When sending request to the API, we can specify in the URL **query strings**, typically in the format such as **resource?key=value**. With the help of query strings, we can specify in which data resources we are interested including the size of the data (e.g. resource?page=2&size=200) called *pagination*.
+
+### Integration
+
+**Client-driven integration** means that the user (you) access the API on the server and you receive real-time responses. This is the most common way for web scrapers to access data by sending requests on our own.
+
+**Server-driven integration**  can be useful in case we want to update information on a continuous basis. For instance, in *polling* the client sends within time intervals requests to the server and asks for updates. In *long polling* the server only replies to the client when there have been changes in the meantime. The most elaborate solution are *webhooks* where the client waits for information. The server uses the unique callback URL provided by the client which serves as a conduit for the update.
+
+## API Packages in R
+
+So far you have attained an overview how to communicate with (REST) APIs. Before venturing into writing code with the httr package, it should be highlighted that many frequently visited websites have already established R packages that have already code which let's us communicate with the APIs. Before manually communicating with an API, check whether there is no available R package. Here is a selected list of examples:
+
+### Twitter - rtweet
+
+We can use the [*rtweet*](https://cran.r-project.org/web/packages/rtweet/index.html) package to access Twitter data. However, if you want to use the rtweet package, you need a twitter account. Here, we use the *search_tweet()* function to retrieve the latest 100 tweets in English language (without taking retweets in consideration).
+
+```{r rtweet, error=TRUE, echo=TRUE, eval=F}
+library(rtweet)
+tweets <- search_tweets(q = "#rstats", 
+                        n = 100, 
+                        type = "recent", 
+                        include_rts = FALSE, 
+                        lang = "en")
+```
+
+### World Bank - WDI
+
+Similar, we can use the [*WDI*](https://cran.r-project.org/web/packages/WDI/) package which connects our R program to the World Bank's API so that we can extract economic data. For instance, here we extract data on GDP for all countries in the world in the year 2019 and then create a diagram where we count the amount of countries for different regions conditional on their income level.
+
+```{r Load pacakges, message=F}
+library(tidyverse)
+library(RColorBrewer)
+```
+
+```{r WDI, warning=FALSE}
+library(WDI)
+gdp <- WDI(country = "all", 
+           indicator = "NY.GDP.MKTP.CD", 
+           start = 2019, 
+           end = 2019, 
+           extra = TRUE)
+gdp %>% 
+  rename(gdp = NY.GDP.MKTP.CD) %>% 
+  mutate(gdp = as.numeric(gdp)) %>% 
+  filter(!is.na(gdp) & region != "Aggregates") %>% 
+    ggplot(mapping = aes(x = region, fill = region)) + 
+    geom_bar() + 
+    xlab(label = "") +
+    ylab(label = "") +
+    scale_fill_manual(values = brewer.pal(n = 7, name = "Set1"), name = "Regions") + 
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(), 
+          legend.title = element_text(hjust = 0.5, face = "bold")) + 
+    facet_wrap(vars(income))
+```
+
+### Stock Market Analysis in R - quantmod
+
+Another powerful example is the [**quantmod**](https://www.quantmod.com) package created for stock market analysis in R. Here, we are download stock market data on Tesla Inc. from Yahoo Fiance ranging from 01.01.2020 until 18.04.2021 and plot the data.
+
+```{r quantmod, message=F, warning=FALSE}
+library(quantmod)
+getSymbols(Symbols = "TSLA", 
+           from = '2020-01-01', 
+           to = "2021-04-18", 
+           src = "yahoo",
+           warnings = FALSE, 
+           auto.assign = TRUE)
+barChart(x = TSLA)
+```
+
+
+## Manually communicating with APIs
+
+The previous three examples showed that for widely accessed data, researchers and practicioners have already created R packages that we can use to retrieve data from servers. However, we do not always have this kind of luxury. In this case, we have no other choice than to read the documentation of APIs and learn how to communicate with those.
+
+In the following example, we are going to extract data on asteroids from NASA. Please click [here](https://api.nasa.gov/neo/?api_key=DEMO_KEY) and [here](https://api.nasa.gov) to gain more information about the documentation as well as the original research website [here](https://cneos.jpl.nasa.gov). The documentation tells us the following:
+
+*"Asteroids - NeoWs*
+
+*NeoWs (Near Earth Object Web Service) is a RESTful web service for near earth Asteroid information. With NeoWs a user can: search for Asteroids based on their closest approach date to Earth, lookup a specific Asteroid with its NASA JPL small body id, as well as browse the overall data-set."*
+
+*Retrieve a list of Asteroids based on their closest approach date to Earth. GET https://api.nasa.gov/neo/rest/v1/feed?start_date=START_DATE&end_date=END_DATE&api_key=API_KEY*
+
+*Neo - Lookup*
+*Lookup a specific Asteroid based on its NASA JPL small body (SPK-ID) ID GET https://api.nasa.gov/neo/rest/v1/neo/*
+
+*Neo - Browse*
+*Browse the overall Asteroid data-set GET https://api.nasa.gov/neo/rest/v1/neo/browse/*
+
+We further learn that we can authenticate with **DEMO_KEY** instead of a uniquely assigned key if we just want to explore their datasets. We will now download data on near earth asteroids from the 2nd January 2021 using the **httr** package and then extract information about one particular asteroid.
+
+```{r Load pacakges 2, message=F}
+library(httr)
+library(jsonlite)
+```
+
+```{r GET data}
+root <- "https://api.nasa.gov"
+api_path <- "neo/rest/v1/feed"
+query <- list(start_date = "2021-01-02",
+              end_date = "2021-01-02",
+              api_key = "DEMO_KEY")
+res <- GET(url = root, path = api_path, query = query)
+res
+```
+
+We can see in the output that our retrieval process worked out. Status is "200" which means that everything went well. The Content-Type tells us that the data is stored in JSON format. However, because the data is encoded in single bytes, we have to convert those raw bytes into character strings.
+
+```{r Print data}
+content <- rawToChar(res$content)
+output <- fromJSON(content)
+str(output ,max.level = 1)
+output[[2]] # Amount of asteroids
+output$near_earth_objects[[1]][[2]] # List of asteroid ids
+asteroid_id <- output$near_earth_objects[[1]][[2]][1]
+```
+
+We can see that on the 2nd January 2021, NASA registered 20 near-earth asteroids. Let's look up some data on the first asteroid.
+
+```{r GET data single asteroid}
+root <- "https://api.nasa.gov"
+api_path <- paste0("/neo/rest/v1/neo/",asteroid_id)
+query <- list(api_key = "DEMO_KEY")
+asteroid <- GET(url = root, path = api_path, query = query)
+asteroid
+asteroid <- rawToChar(asteroid$content)
+asteroid <- fromJSON(asteroid)
+asteroid$name
+asteroid$is_potentially_hazardous_asteroid
+```
+
+We can see that asteroid **2009 TK12**, which flies close to the earth on the 02.01.2020, is classified as a *potentially hazardous asteroid*. We can find more information about this particular asteroid [here](https://www.spacereference.org/asteroid/2009-tk12). See below a picture with comparable sizes (courtesy of Judy Mou and Ian Webster at www.spacereference.org/).
+
+```{r Asteroid Picture, echo=FALSE}
+knitr::include_graphics(path = "asteroid.png")
+```
+
+## API Types
+
+Many REST APIs follow certain standardized protocols. The most common ones are [**ODATA**](https://en.wikipedia.org/wiki/Open_Data_Protocol), [**OpenAPI**](https://en.wikipedia.org/wiki/OpenAPI_Specification), and [**CKAN**](https://en.wikipedia.org/wiki/CKAN). Before you connect to an API, check first whether the API you want to connect to used one of those technologies. There are already established R packages that allow us to connect to each of the three aforementioned API types, however, be aware that it is sometimes easier to access the API directly with GET() than playing very long with the packages:
+
+1. CKAN: ckanr
+2. OData: OData
+3. OpenAPI: rapiclient
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
